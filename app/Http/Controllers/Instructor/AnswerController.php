@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Instructor;
 
 use App\Http\Controllers\Controller;
+use App\Models\StudentAnswer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AnswerController extends Controller
 {
@@ -12,13 +14,25 @@ class AnswerController extends Controller
      */
     public function update(Request $request, $answerId)
     {
-        // TODO: Validate request inputs (marks_awarded)
-        // TODO: Find the Answer record (e.g. StudentAnswer::findOrFail($answerId))
-        // TODO: Ensure the authenticated instructor has permission to grade this answer
-        // TODO: Update the marks_awarded column with the graded marks
-        // TODO: Save to the database
-        // TODO: Return back to the grading view with a status message
+        $validated = $request->validate([
+            'marks_awarded' => 'required|numeric|min:0',
+        ]);
 
-        return redirect()->back();
+        $answer = StudentAnswer::with(['attempt.exam', 'question'])->findOrFail($answerId);
+
+        // Ensure the instructor owns this exam
+        if ($answer->attempt->exam->instructor_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Ensure marks awarded doesn't exceed question's maximum marks
+        if ($validated['marks_awarded'] > $answer->question->marks) {
+            return redirect()->back()->with('error', 'Marks awarded cannot exceed the question max marks (' . $answer->question->marks . ').');
+        }
+
+        $answer->marks_awarded = $validated['marks_awarded'];
+        $answer->save();
+
+        return redirect()->back()->with('success', 'Question marks updated successfully.');
     }
 }

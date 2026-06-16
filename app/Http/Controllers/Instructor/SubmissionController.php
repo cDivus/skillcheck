@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Instructor;
 
 use App\Http\Controllers\Controller;
+use App\Models\Exam;
+use App\Models\ExamAttempt;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SubmissionController extends Controller
 {
@@ -12,11 +15,14 @@ class SubmissionController extends Controller
      */
     public function index($examId)
     {
-        // TODO: Find the exam or fail
-        // TODO: Retrieve all attempts for the exam where status is 'submitted' or 'graded'
-        // TODO: Pass the attempts to the instructor.submissions.index view
+        $exam = Exam::where('instructor_id', Auth::id())->findOrFail($examId);
+        
+        $attempts = ExamAttempt::where('exam_id', $examId)
+            ->whereIn('status', ['submitted', 'graded'])
+            ->with('student')
+            ->get();
 
-        return view('instructor.submissions.index');
+        return view('instructor.submissions.index', compact('exam', 'attempts'));
     }
 
     /**
@@ -24,11 +30,21 @@ class SubmissionController extends Controller
      */
     public function show($attemptId)
     {
-        // TODO: Find the exam attempt with relationships (student, answers, questions, options)
-        // TODO: Ensure the authenticated instructor owns the exam associated with this attempt
-        // TODO: Pass the attempt details to the instructor.submissions.grade view
+        $attempt = ExamAttempt::with([
+            'student',
+            'exam.questions.options',
+            'answers.question'
+        ])->findOrFail($attemptId);
 
-        return view('instructor.submissions.grade');
+        // Ensure the authenticated instructor owns the exam associated with this attempt
+        if ($attempt->exam->instructor_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Key answers by question_id for easy lookup
+        $answers = $attempt->answers->keyBy('question_id');
+
+        return view('instructor.submissions.grade', compact('attempt', 'answers'));
     }
 
     /**
@@ -36,12 +52,25 @@ class SubmissionController extends Controller
      */
     public function finalize(Request $request, $attemptId)
     {
-        // TODO: Find the attempt
-        // TODO: Ensure all essay/manual questions have been graded (marks_awarded is not null)
-        // TODO: Calculate the final total score/grade for the attempt
-        // TODO: Update the attempt status to 'graded'
-        // TODO: Redirect to the submission listing with a success message
+        $attempt = ExamAttempt::with('exam.questions', 'answers')->findOrFail($attemptId);
 
-        return redirect()->route('instructor.exams.index');
+        if ($attempt->exam->instructor_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Ensure all essay/manual questions have been graded (marks_awarded is not null)
+        $ungradedAnswers = $attempt->answers->filter(function ($answer) {
+            return $answer->marks_awarded === null;
+        });
+
+        if ($ungradedAnswers->isNotEmpty()) {
+            return redirect()->back()->with('error', 'Please grade all essay questions before finalising the attempt.');
+        }
+
+        $attempt->status = 'graded';
+        $attempt->save();
+
+        return redirect()->route('instructor.submissions.index', $attempt->exam_id)
+            ->with('success', 'Attempt finalized and graded successfully.');
     }
 }

@@ -3,19 +3,46 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Exam;
+use App\Models\ExamAttempt;
+use Illuminate\Support\Facades\Auth;
 
 class ExamController extends Controller
 {
     /**
-     * Display list of exams available to the student.
+     * Display list of exams the student has already taken/attempted.
      */
     public function index()
     {
-        // TODO: Retrieve list of all active exams
-        // TODO: Fetch existing student attempts for comparison
-        // TODO: Pass data to the student.exams.index view
+        $attempts = ExamAttempt::where('student_id', Auth::id())
+            ->with(['exam'])
+            ->get();
 
-        return view('student.exams.index');
+        return view('student.exams.index', compact('attempts'));
+    }
+
+    /**
+     * Display the exam landing/start page from a shared instructor link.
+     */
+    public function show($examId)
+    {
+        $exam = Exam::findOrFail($examId);
+
+        $attempt = ExamAttempt::where('exam_id', $examId)
+            ->where('student_id', Auth::id())
+            ->first();
+
+        if ($attempt) {
+            if ($attempt->status === 'in_progress') {
+                return redirect()->route('student.exams.attempt.take', [
+                    'exam' => $examId,
+                    'attempt' => $attempt->attempt_id
+                ]);
+            }
+            return redirect()->route('student.exams.index')
+                ->with('error', 'You have already attempted this exam.');
+        }
+
+        return view('student.exams.show', compact('exam'));
     }
 }
