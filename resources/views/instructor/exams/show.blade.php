@@ -24,6 +24,15 @@
                 </div>
             </div>
             
+            <div class="row mt-2">
+                <div class="col-md-12">
+                    <strong>Question Ordering:</strong> 
+                    <span class="badge bg-{{ $exam->randomize_questions ? 'info text-white' : 'secondary text-white' }}">
+                        {{ $exam->randomize_questions ? 'Randomized' : 'Sequential (Order Index)' }}
+                    </span>
+                </div>
+            </div>
+            
             <div class="mt-3">
                 <strong>Student Link:</strong>
                 <div class="input-group">

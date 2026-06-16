@@ -48,7 +48,10 @@
                             <tbody>
                                 @foreach ($attempts as $attempt)
                                     <tr>
-                                        <td class="ps-4 fw-bold">{{ $attempt->student->username }}</td>
+                                        <td class="ps-4">
+                                            <div class="fw-bold">{{ $attempt->student->username }}</div>
+                                            <small class="text-muted">{{ $attempt->student->email }}</small>
+                                        </td>
                                         <td>{{ $attempt->started_at ? $attempt->started_at->format('Y-m-d H:i:s') : 'N/A' }}</td>
                                         <td>{{ $attempt->submitted_at ? $attempt->submitted_at->format('Y-m-d H:i:s') : 'N/A' }}</td>
                                         <td>

@@ -40,6 +40,12 @@
                                     <span>Total Questions:</span>
                                     <strong>{{ $exam->questions()->count() }}</strong>
                                 </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <span>Question Ordering:</span>
+                                    <span class="badge bg-{{ $exam->randomize_questions ? 'info text-white' : 'secondary text-white' }}">
+                                        {{ $exam->randomize_questions ? 'Randomized' : 'Sequential' }}
+                                    </span>
+                                </li>
                             </ul>
                         </div>
                         <div class="col-sm-6">

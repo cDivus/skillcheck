@@ -53,6 +53,14 @@
                         </div>
                     </div>
 
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="randomize_questions" name="randomize_questions" value="1" {{ old('randomize_questions') ? 'checked' : '' }}>
+                        <label class="form-check-label fw-bold" for="randomize_questions">
+                            Randomize Questions
+                        </label>
+                        <div class="form-text text-muted">If checked, the system will shuffle the order of questions for each student attempt.</div>
+                    </div>
+
                     <div class="d-grid mt-4">
                         <button type="submit" class="btn btn-primary btn-lg">Create Exam</button>
                     </div>

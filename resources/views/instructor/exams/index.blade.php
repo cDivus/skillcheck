@@ -48,6 +48,12 @@
                                 <li class="mb-2"><strong>Duration:</strong> {{ $exam->duration_s }} seconds ({{ round($exam->duration_s / 60, 2) }} minutes)</li>
                                 <li class="mb-2"><strong>Start Time:</strong> {{ $exam->start_time ?? 'N/A' }}</li>
                                 <li class="mb-2"><strong>End Time:</strong> {{ $exam->end_time ?? 'N/A' }}</li>
+                                <li class="mb-2">
+                                    <strong>Question Ordering:</strong> 
+                                    <span class="badge bg-{{ $exam->randomize_questions ? 'info text-white' : 'secondary text-white' }}">
+                                        {{ $exam->randomize_questions ? 'Randomized' : 'Sequential' }}
+                                    </span>
+                                </li>
                             </ul>
 
                             <div class="mb-3">

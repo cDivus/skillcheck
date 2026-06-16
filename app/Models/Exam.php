@@ -23,6 +23,11 @@ class Exam extends Model
         'start_time',
         'end_time',
         'duration_s',
+        'randomize_questions',
+    ];
+
+    protected $casts = [
+        'randomize_questions' => 'boolean',
     ];
 
     public function instructor()

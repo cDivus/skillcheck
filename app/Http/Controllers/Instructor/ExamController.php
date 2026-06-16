@@ -55,6 +55,7 @@ class ExamController extends Controller
             'start_time' => 'nullable|date',
             'end_time' => 'nullable|date|after:start_time',
             'duration_s' => 'required|integer|min:1',
+            'randomize_questions' => 'nullable|boolean',
         ]);
 
         Exam::create([
@@ -64,6 +65,7 @@ class ExamController extends Controller
             'start_time' => $validated['start_time'] ?? null,
             'end_time' => $validated['end_time'] ?? null,
             'duration_s' => $validated['duration_s'],
+            'randomize_questions' => $request->boolean('randomize_questions'),
         ]);
 
         return redirect()->route('instructor.exams.index')->with('success', 'Exam created successfully.');
