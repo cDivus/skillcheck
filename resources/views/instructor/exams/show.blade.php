@@ -94,8 +94,13 @@
                                     <span class="badge bg-dark text-white">🔒 Locked Position</span>
                                 @endif
                             </div>
-                            <div>
+                            <div class="d-flex gap-2">
                                 <a href="{{ route('instructor.questions.edit', ['exam' => $exam->exam_id, 'question' => $question->question_id]) }}" class="btn btn-outline-primary btn-sm">Edit Question</a>
+                                <form action="{{ route('instructor.questions.destroy', ['exam' => $exam->exam_id, 'question' => $question->question_id]) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this question? This will reorder the remaining questions.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                                </form>
                             </div>
                         </div>
                         <div class="card-body">

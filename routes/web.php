@@ -38,6 +38,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/exams/{exam}/questions/{question}/edit', [Instructor\QuestionController::class, 'edit'])->name('questions.edit');
         Route::put('/exams/{exam}/questions/{question}', [Instructor\QuestionController::class, 'update'])->name('questions.update');
+        Route::delete('/exams/{exam}/questions/{question}', [Instructor\QuestionController::class, 'destroy'])->name('questions.destroy');
 
         // Grading & Evaluation
         Route::get('/exams/{exam}/submissions', [Instructor\SubmissionController::class, 'index'])->name('submissions.index');

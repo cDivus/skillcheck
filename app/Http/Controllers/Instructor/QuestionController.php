@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Instructor;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\Exam;
 use App\Models\Question;
 use App\Models\Option;
@@ -250,5 +251,38 @@ class QuestionController extends Controller
         }
 
         return redirect()->route('instructor.exams.show', $exam->exam_id)->with('success', 'Question updated successfully.');
+    }
+
+    /**
+     * Remove the specified question from storage and reorder remaining questions.
+     */
+    public function destroy($examId, $questionId)
+    {
+        $exam = Exam::where('instructor_id', Auth::id())
+            ->findOrFail($examId);
+
+        $question = Question::where('exam_id', $exam->exam_id)
+            ->findOrFail($questionId);
+
+        DB::transaction(function () use ($exam, $question) {
+            $deletedOrderIndex = $question->order_index;
+
+            // Delete the question (Model event handles image cleanup)
+            $question->delete();
+
+            // Retrieve remaining questions with a higher index, sorted ascending
+            $subsequentQuestions = Question::where('exam_id', $exam->exam_id)
+                ->where('order_index', '>', $deletedOrderIndex)
+                ->orderBy('order_index', 'asc')
+                ->get();
+
+            // Reorder by decrementing their index
+            foreach ($subsequentQuestions as $q) {
+                $q->update(['order_index' => $q->order_index - 1]);
+            }
+        });
+
+        return redirect()->route('instructor.exams.show', $exam->exam_id)
+            ->with('success', 'Question deleted and order reindexed successfully.');
     }
 }
