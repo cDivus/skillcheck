@@ -66,7 +66,7 @@
                                             @endif
                                         </td>
                                         <td class="text-end pe-4">
-                                            <a href="{{ route('instructor.submissions.show', $attempt->attempt_id) }}" class="btn btn-primary btn-sm">
+                                            <a href="{{ route('instructor.submissions.grade', $attempt->attempt_id) }}" class="btn btn-primary btn-sm">
                                                 {{ $attempt->status === 'graded' ? 'View Details' : 'Grade Submission' }}
                                             </a>
                                         </td>

@@ -85,7 +85,7 @@
 
                     <!-- Grading controls / feedback -->
                     @if ($question->type === 'essay')
-                        <form action="{{ route('instructor.answers.update', $answer ? $answer->answer_id : 0) }}" method="POST" class="row g-3 align-items-center">
+                        <form action="{{ route('instructor.answers.grade.update', $answer ? $answer->answer_id : 0) }}" method="POST" class="row g-3 align-items-center">
                             @csrf
                             @method('PUT')
                             <div class="col-auto">
@@ -140,7 +140,7 @@
                     <p class="text-muted mb-0 small">This will lock the attempt score and publish the results to the student dashboard.</p>
                 </div>
                 <div>
-                    <form action="{{ route('instructor.submissions.finalize', $attempt->attempt_id) }}" method="POST">
+                    <form action="{{ route('instructor.attempts.finalize', $attempt->attempt_id) }}" method="POST">
                         @csrf
                         <button type="submit" class="btn btn-success btn-lg px-4" 
                             onclick="return confirm('Confirm finalizing the grade sheet? Make sure all essay questions have been saved first.');">
