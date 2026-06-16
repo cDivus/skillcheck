@@ -42,6 +42,7 @@ class QuestionController extends Controller
             'correct_options.*' => 'integer',
             'tf_correct' => 'nullable|string|in:True,False',
             'qa_correct_answer' => 'nullable|string|max:1000',
+            'is_locked' => 'nullable|boolean',
         ]);
 
         // Automatically determine the next order_index for questions in this exam
@@ -61,6 +62,7 @@ class QuestionController extends Controller
             'time_limit_s' => $validated['time_limit_s'] ?? null,
             'image_url' => $imagePath,
             'marks' => $validated['marks'],
+            'is_locked' => $request->boolean('is_locked'),
         ]);
 
         // Save options if the question type is multiple_choice or question_answer
@@ -139,6 +141,7 @@ class QuestionController extends Controller
             'correct_options.*' => 'integer',
             'tf_correct' => 'nullable|string|in:True,False',
             'qa_correct_answer' => 'nullable|string|max:1000',
+            'is_locked' => 'nullable|boolean',
         ]);
 
         $imagePath = $question->image_url;
@@ -163,6 +166,7 @@ class QuestionController extends Controller
             'time_limit_s' => $validated['time_limit_s'] ?? null,
             'image_url' => $imagePath,
             'marks' => $validated['marks'],
+            'is_locked' => $request->boolean('is_locked'),
         ]);
 
         // Process options based on question type

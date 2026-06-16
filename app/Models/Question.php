@@ -25,6 +25,11 @@ class Question extends Model
         'type',
         'time_limit_s',
         'marks',
+        'is_locked',
+    ];
+
+    protected $casts = [
+        'is_locked' => 'boolean',
     ];
 
     public function exam()

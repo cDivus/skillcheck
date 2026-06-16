@@ -90,6 +90,9 @@
                                 @if ($question->time_limit_s)
                                     <span class="badge bg-warning text-dark">Time Limit: {{ $question->time_limit_s }}s</span>
                                 @endif
+                                @if ($question->is_locked)
+                                    <span class="badge bg-dark text-white">🔒 Locked Position</span>
+                                @endif
                             </div>
                             <div>
                                 <a href="{{ route('instructor.questions.edit', ['exam' => $exam->exam_id, 'question' => $question->question_id]) }}" class="btn btn-outline-primary btn-sm">Edit Question</a>

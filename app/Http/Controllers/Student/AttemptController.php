@@ -132,10 +132,7 @@ class AttemptController extends Controller
                 $attempt->save();
             }
         } else {
-            $orderedQuestionIds = $exam->questions()->orderBy('order_index')->pluck('question_id')->toArray();
-            if ($exam->randomize_questions) {
-                shuffle($orderedQuestionIds);
-            }
+            $orderedQuestionIds = $this->generateQuestionOrder($exam);
             $attempt->question_order = $orderedQuestionIds;
             $attempt->save();
         }
@@ -289,5 +286,43 @@ class AttemptController extends Controller
             $attempt->status = 'graded';
             $attempt->save();
         }
+    }
+
+    /**
+     * Generate question order for the exam attempt, preserving locked question positions.
+     */
+    protected function generateQuestionOrder(\App\Models\Exam $exam)
+    {
+        $questions = $exam->questions()->orderBy('order_index')->get();
+
+        if (!$exam->randomize_questions) {
+            return $questions->pluck('question_id')->toArray();
+        }
+
+        $locked = [];
+        $unlocked = [];
+
+        foreach ($questions as $index => $question) {
+            if ($question->is_locked) {
+                $locked[$index] = $question->question_id;
+            } else {
+                $unlocked[] = $question->question_id;
+            }
+        }
+
+        shuffle($unlocked);
+
+        $orderedQuestionIds = [];
+        $unlockedIndex = 0;
+
+        for ($i = 0; $i < count($questions); $i++) {
+            if (isset($locked[$i])) {
+                $orderedQuestionIds[$i] = $locked[$i];
+            } else {
+                $orderedQuestionIds[$i] = $unlocked[$unlockedIndex++];
+            }
+        }
+
+        return $orderedQuestionIds;
     }
 }

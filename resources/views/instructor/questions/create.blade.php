@@ -59,6 +59,14 @@
                         <input type="file" id="image" name="image" class="form-control" accept="image/*">
                     </div>
 
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="is_locked" name="is_locked" value="1" {{ old('is_locked') ? 'checked' : '' }}>
+                        <label class="form-check-label fw-bold" for="is_locked">
+                            Lock Question Position
+                        </label>
+                        <div class="form-text text-muted">If checked, this question will always remain at its current index position, even when question randomization is enabled.</div>
+                    </div>
+
                     <!-- Dynamic Options Section -->
                     <div id="options_section" class="card bg-light mb-4 border-dashed" style="display: none;">
                         <div class="card-body">
