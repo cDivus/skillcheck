@@ -5,7 +5,7 @@
     <div class="col-md-8">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h2 mb-0">Edit Exam: {{ $exam->title }}</h1>
-            <a href="{{ route('instructor.exams.show', $exam) }}" class="btn btn-outline-secondary">&larr; Back to Exam Details</a>
+            <a href="{{ route('instructor.exams.index') }}" class="btn btn-outline-secondary">&larr; Back to Exams List</a>
         </div>
 
         <div class="card shadow-sm">

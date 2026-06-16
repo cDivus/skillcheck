@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\ExamAttempt;
 use App\Models\StudentAnswer;
+use App\Models\Exam;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,20 @@ class AttemptController extends Controller
     public function store(Request $request, $examId)
     {
         $studentId = Auth::id();
+
+        $exam = Exam::findOrFail($examId);
+
+        // Check if the exam has started yet
+        if ($exam->start_time && now()->lt(Carbon::parse($exam->start_time))) {
+            return redirect()->route('student.exams.show', $examId)
+                ->with('error', 'This exam has not started yet.');
+        }
+
+        // Check if the exam deadline has passed
+        if ($exam->end_time && now()->gt(Carbon::parse($exam->end_time))) {
+            return redirect()->route('student.exams.index')
+                ->with('error', 'This exam is no longer available (deadline passed).');
+        }
 
         // Enforce unique attempt
         $existingAttempt = ExamAttempt::where('exam_id', $examId)
