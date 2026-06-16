@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Instructor;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Exam;
 
 class ExamController extends Controller
 {
@@ -13,10 +14,12 @@ class ExamController extends Controller
      */
     public function index()
     {
-        // TODO: Retrieve exams created by the authenticated instructor (instructor_id = Auth::id())
-        // TODO: Pass the exams data to the instructor.exams.index view
+        // Retrieve exams created by the authenticated instructor, eager loading questions and options
+        $exams = Exam::with('questions.options')
+            ->where('instructor_id', Auth::id())
+            ->get();
 
-        return view('instructor.exams.index');
+        return view('instructor.exams.index', compact('exams'));
     }
 
     /**
@@ -32,14 +35,23 @@ class ExamController extends Controller
      */
     public function store(Request $request)
     {
-        // TODO: Validate request inputs (title, duration_s)
-        // TODO: Create a new Exam record with details:
-        //       - title: $request->title
-        //       - duration_s: $request->duration_s
-        //       - instructor_id: Auth::id()
-        // TODO: Save to the database
-        // TODO: Redirect to the instructor exams list with a success message
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'start_time' => 'nullable|date',
+            'end_time' => 'nullable|date|after:start_time',
+            'duration_s' => 'required|integer|min:1',
+        ]);
 
-        return redirect()->route('instructor.exams.index');
+        Exam::create([
+            'instructor_id' => Auth::id(),
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'start_time' => $validated['start_time'] ?? null,
+            'end_time' => $validated['end_time'] ?? null,
+            'duration_s' => $validated['duration_s'],
+        ]);
+
+        return redirect()->route('instructor.exams.index')->with('success', 'Exam created successfully.');
     }
 }

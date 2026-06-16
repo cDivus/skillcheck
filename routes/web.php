@@ -32,8 +32,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/exams/{exam}/questions/create', [Instructor\QuestionController::class, 'create'])->name('questions.create');
         Route::post('/exams/{exam}/questions', [Instructor\QuestionController::class, 'store'])->name('questions.store');
 
-        Route::get('/exams/{exam}/questions/{question}/options/create', [Instructor\OptionController::class, 'create'])->name('options.create');
-        Route::post('/exams/{exam}/questions/{question}/options', [Instructor\OptionController::class, 'store'])->name('options.store');
+        Route::get('/exams/{exam}/questions/{question}/edit', [Instructor\QuestionController::class, 'edit'])->name('questions.edit');
+        Route::put('/exams/{exam}/questions/{question}', [Instructor\QuestionController::class, 'update'])->name('questions.update');
 
         // Grading & Evaluation
         Route::get('/exams/{exam}/submissions', [Instructor\SubmissionController::class, 'index'])->name('submissions.index');
