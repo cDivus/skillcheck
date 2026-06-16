@@ -68,4 +68,19 @@ class ExamController extends Controller
 
         return redirect()->route('instructor.exams.index')->with('success', 'Exam created successfully.');
     }
+
+    /**
+     * Remove the specified exam from storage.
+     */
+    public function destroy(Exam $exam)
+    {
+        // Ensure the authenticated instructor owns this exam
+        if ($exam->instructor_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $exam->delete();
+
+        return redirect()->route('instructor.exams.index')->with('success', 'Exam deleted successfully.');
+    }
 }
