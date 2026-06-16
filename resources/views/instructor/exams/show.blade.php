@@ -64,6 +64,9 @@
 
             <div class="d-flex gap-2 mt-4">
                 <a href="{{ route('instructor.questions.create', ['exam' => $exam->exam_id]) }}" class="btn btn-success">+ Add Question</a>
+                @if ($exam->questions->count() > 1)
+                    <a href="{{ route('instructor.questions.reorder', ['exam' => $exam->exam_id]) }}" class="btn btn-outline-primary">⇅ Reorder Questions</a>
+                @endif
             </div>
         </div>
     </div>

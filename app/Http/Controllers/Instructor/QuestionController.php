@@ -285,4 +285,67 @@ class QuestionController extends Controller
         return redirect()->route('instructor.exams.show', $exam->exam_id)
             ->with('success', 'Question deleted and order reindexed successfully.');
     }
+
+    /**
+     * Show the form for reordering questions.
+     */
+    public function reorder($examId)
+    {
+        $exam = Exam::where('instructor_id', Auth::id())
+            ->with(['questions' => function ($query) {
+                $query->orderBy('order_index');
+            }])
+            ->findOrFail($examId);
+
+        return view('instructor.questions.reorder', compact('exam'));
+    }
+
+    /**
+     * Save the new order of questions.
+     */
+    public function saveOrder(Request $request, $examId)
+    {
+        $exam = Exam::where('instructor_id', Auth::id())
+            ->findOrFail($examId);
+
+        $validated = $request->validate([
+            'question_ids' => 'required|array',
+            'question_ids.*' => 'required|string|exists:Questions,question_id',
+        ]);
+
+        $questionIds = $validated['question_ids'];
+
+        try {
+            DB::transaction(function () use ($exam, $questionIds) {
+                // Validate all question IDs belong to this exam
+                $questionsCount = Question::where('exam_id', $exam->exam_id)
+                    ->whereIn('question_id', $questionIds)
+                    ->count();
+
+                // Also make sure we account for all questions currently in the exam
+                $totalExamQuestions = Question::where('exam_id', $exam->exam_id)->count();
+
+                if ($questionsCount !== count($questionIds) || $questionsCount !== $totalExamQuestions) {
+                    throw new \Exception('Invalid or incomplete list of questions submitted.');
+                }
+
+                // Step 1: Shift temporarily to negative indices to prevent duplicate key violations
+                foreach ($questionIds as $newIndex => $questionId) {
+                    Question::where('question_id', $questionId)
+                        ->update(['order_index' => -($newIndex + 1)]);
+                }
+
+                // Step 2: Convert them back to positive values
+                Question::where('exam_id', $exam->exam_id)
+                    ->where('order_index', '<', 0)
+                    ->update(['order_index' => DB::raw('ABS(order_index)')]);
+            });
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to reorder questions: ' . $e->getMessage());
+        }
+
+        return redirect()->route('instructor.exams.show', $exam->exam_id)
+            ->with('success', 'Question order updated successfully.');
+    }
 }

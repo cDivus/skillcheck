@@ -36,6 +36,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/exams/{exam}/questions/create', [Instructor\QuestionController::class, 'create'])->name('questions.create');
         Route::post('/exams/{exam}/questions', [Instructor\QuestionController::class, 'store'])->name('questions.store');
 
+        Route::get('/exams/{exam}/questions/reorder', [Instructor\QuestionController::class, 'reorder'])->name('questions.reorder');
+        Route::post('/exams/{exam}/questions/reorder', [Instructor\QuestionController::class, 'saveOrder'])->name('questions.save-order');
+
         Route::get('/exams/{exam}/questions/{question}/edit', [Instructor\QuestionController::class, 'edit'])->name('questions.edit');
         Route::put('/exams/{exam}/questions/{question}', [Instructor\QuestionController::class, 'update'])->name('questions.update');
         Route::delete('/exams/{exam}/questions/{question}', [Instructor\QuestionController::class, 'destroy'])->name('questions.destroy');
