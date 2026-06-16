@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Support\Facades\Storage;
 
 class Question extends Model
 {
@@ -34,5 +35,14 @@ class Question extends Model
     public function options()
     {
         return $this->hasMany(Option::class, 'question_id', 'question_id')->orderBy('order_index');
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($question) {
+            if ($question->image_url && !filter_var($question->image_url, FILTER_VALIDATE_URL)) {
+                Storage::disk('public')->delete($question->image_url);
+            }
+        });
     }
 }

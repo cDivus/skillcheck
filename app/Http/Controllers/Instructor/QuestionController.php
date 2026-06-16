@@ -34,7 +34,7 @@ class QuestionController extends Controller
             'question_text' => 'required|string',
             'type' => 'required|string|in:multiple_choice,true_false,question_answer,essay',
             'time_limit_s' => 'nullable|integer|min:1',
-            'image_url' => 'nullable|string|max:255',
+            'image' => 'nullable|image|max:2048',
             'marks' => 'required|numeric|min:0',
             'options' => 'nullable|array',
             'options.*' => 'nullable|string',
@@ -48,13 +48,18 @@ class QuestionController extends Controller
         $maxOrder = Question::where('exam_id', $exam->exam_id)->max('order_index');
         $nextOrder = ($maxOrder !== null) ? $maxOrder + 1 : 1;
 
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('questions', 'public');
+        }
+
         $question = Question::create([
             'exam_id' => $exam->exam_id,
             'order_index' => $nextOrder,
             'question_text' => $validated['question_text'],
             'type' => $validated['type'],
             'time_limit_s' => $validated['time_limit_s'] ?? null,
-            'image_url' => $validated['image_url'] ?? null,
+            'image_url' => $imagePath,
             'marks' => $validated['marks'],
         ]);
 
@@ -124,7 +129,8 @@ class QuestionController extends Controller
             'question_text' => 'required|string',
             'type' => 'required|string|in:multiple_choice,true_false,question_answer,essay',
             'time_limit_s' => 'nullable|integer|min:1',
-            'image_url' => 'nullable|string|max:255',
+            'image' => 'nullable|image|max:2048',
+            'remove_image' => 'nullable',
             'marks' => 'required|numeric|min:0',
             'options' => 'nullable|array',
             'options.*.option_id' => 'nullable|string',
@@ -135,11 +141,27 @@ class QuestionController extends Controller
             'qa_correct_answer' => 'nullable|string|max:1000',
         ]);
 
+        $imagePath = $question->image_url;
+
+        if ($request->has('remove_image')) {
+            if ($question->image_url && !filter_var($question->image_url, FILTER_VALIDATE_URL)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($question->image_url);
+            }
+            $imagePath = null;
+        }
+
+        if ($request->hasFile('image')) {
+            if ($question->image_url && !filter_var($question->image_url, FILTER_VALIDATE_URL)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($question->image_url);
+            }
+            $imagePath = $request->file('image')->store('questions', 'public');
+        }
+
         $question->update([
             'question_text' => $validated['question_text'],
             'type' => $validated['type'],
             'time_limit_s' => $validated['time_limit_s'] ?? null,
-            'image_url' => $validated['image_url'] ?? null,
+            'image_url' => $imagePath,
             'marks' => $validated['marks'],
         ]);
 

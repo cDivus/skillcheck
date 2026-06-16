@@ -66,7 +66,8 @@
                                     | <strong>Time Limit:</strong> {{ $question->time_limit_s }} seconds
                                 @endif
                                 @if ($question->image_url)
-                                    <br><strong>Image URL:</strong> {{ $question->image_url }}
+                                    <br><strong>Image:</strong><br>
+                                    <img src="{{ filter_var($question->image_url, FILTER_VALIDATE_URL) ? $question->image_url : asset('storage/' . $question->image_url) }}" alt="Question Image" style="max-width: 150px; max-height: 150px; display: block; margin-top: 5px; margin-bottom: 5px;">
                                 @endif
                                 <p><em>{{ $question->question_text }}</em></p>
 

@@ -19,7 +19,7 @@
         </div>
     @endif
 
-    <form action="{{ route('instructor.questions.store', ['exam' => $exam->exam_id]) }}" method="POST">
+    <form action="{{ route('instructor.questions.store', ['exam' => $exam->exam_id]) }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <div style="margin-bottom: 10px;">
@@ -50,8 +50,8 @@
         </div>
 
         <div style="margin-bottom: 10px;">
-            <label for="image_url">Image URL (Optional):</label><br>
-            <input type="text" id="image_url" name="image_url" value="{{ old('image_url') }}">
+            <label for="image">Question Image (Optional):</label><br>
+            <input type="file" id="image" name="image" accept="image/*">
         </div>
 
         <div id="options_section" style="margin-bottom: 15px; border: 1px dashed gray; padding: 10px; display: none;">

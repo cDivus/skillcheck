@@ -19,7 +19,7 @@
         </div>
     @endif
 
-    <form action="{{ route('instructor.questions.update', ['exam' => $exam->exam_id, 'question' => $question->question_id]) }}" method="POST">
+    <form action="{{ route('instructor.questions.update', ['exam' => $exam->exam_id, 'question' => $question->question_id]) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -50,8 +50,16 @@
         </div>
 
         <div style="margin-bottom: 10px;">
-            <label for="image_url">Image URL (Optional):</label><br>
-            <input type="text" id="image_url" name="image_url" value="{{ old('image_url', $question->image_url) }}">
+            <label for="image">Question Image (Optional):</label><br>
+            @if ($question->image_url)
+                <div style="margin-bottom: 10px;">
+                    <img src="{{ filter_var($question->image_url, FILTER_VALIDATE_URL) ? $question->image_url : asset('storage/' . $question->image_url) }}" alt="Current Question Image" style="max-width: 250px; max-height: 250px; display: block; margin-bottom: 5px;">
+                    <label>
+                        <input type="checkbox" name="remove_image" value="1"> Remove current image
+                    </label>
+                </div>
+            @endif
+            <input type="file" id="image" name="image" accept="image/*">
         </div>
 
         <!-- 1. Options Section -->
