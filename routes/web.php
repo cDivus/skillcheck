@@ -29,6 +29,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/exams/create', [Instructor\ExamController::class, 'create'])->name('exams.create');
         Route::post('/exams', [Instructor\ExamController::class, 'store'])->name('exams.store');
         Route::get('/exams/{exam}', [Instructor\ExamController::class, 'show'])->name('exams.show');
+        Route::get('/exams/{exam}/edit', [Instructor\ExamController::class, 'edit'])->name('exams.edit');
+        Route::put('/exams/{exam}', [Instructor\ExamController::class, 'update'])->name('exams.update');
         Route::delete('/exams/{exam}', [Instructor\ExamController::class, 'destroy'])->name('exams.destroy');
 
         Route::get('/exams/{exam}/questions/create', [Instructor\QuestionController::class, 'create'])->name('questions.create');

@@ -1,6 +1,20 @@
 @extends('layouts.app')
 
 @section('content')
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="mb-4">
         <a href="{{ route('instructor.exams.index') }}" class="btn btn-outline-secondary btn-sm">&larr; Back to Exams List</a>
     </div>
@@ -50,12 +64,6 @@
 
             <div class="d-flex gap-2 mt-4">
                 <a href="{{ route('instructor.questions.create', ['exam' => $exam->exam_id]) }}" class="btn btn-success">+ Add Question</a>
-                <a href="{{ route('instructor.submissions.index', ['exam' => $exam->exam_id]) }}" class="btn btn-secondary">View Submissions</a>
-                <form action="{{ route('instructor.exams.destroy', ['exam' => $exam->exam_id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this exam? This will permanently remove all associated questions, answers, and student attempts.');" style="display: inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Delete Exam</button>
-                </form>
             </div>
         </div>
     </div>

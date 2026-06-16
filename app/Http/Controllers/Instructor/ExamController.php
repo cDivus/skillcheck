@@ -74,6 +74,52 @@ class ExamController extends Controller
     }
 
     /**
+     * Show the form for editing the specified exam.
+     */
+    public function edit(Exam $exam)
+    {
+        // Ensure the authenticated instructor owns this exam
+        if ($exam->instructor_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return view('instructor.exams.edit', compact('exam'));
+    }
+
+    /**
+     * Update the specified exam in storage.
+     */
+    public function update(Request $request, Exam $exam)
+    {
+        // Ensure the authenticated instructor owns this exam
+        if ($exam->instructor_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'start_time' => 'nullable|date',
+            'end_time' => 'nullable|date|after:start_time',
+            'duration_s' => 'required|integer|min:1',
+            'randomize_questions' => 'nullable|boolean',
+            'viewable_responses' => 'nullable|boolean',
+        ]);
+
+        $exam->update([
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'start_time' => $validated['start_time'] ?? null,
+            'end_time' => $validated['end_time'] ?? null,
+            'duration_s' => $validated['duration_s'],
+            'randomize_questions' => $request->boolean('randomize_questions'),
+            'viewable_responses' => $request->boolean('viewable_responses'),
+        ]);
+
+        return redirect()->route('instructor.exams.show', $exam)->with('success', 'Exam updated successfully.');
+    }
+
+    /**
      * Remove the specified exam from storage.
      */
     public function destroy(Exam $exam)

@@ -96,7 +96,7 @@ class QuestionController extends Controller
             ]);
         }
 
-        return redirect()->route('instructor.exams.index')->with('success', 'Question added successfully.');
+        return redirect()->route('instructor.exams.show', $exam->exam_id)->with('success', 'Question added successfully.');
     }
 
     /**
@@ -245,6 +245,6 @@ class QuestionController extends Controller
             Option::where('question_id', $question->question_id)->delete();
         }
 
-        return redirect()->route('instructor.exams.index')->with('success', 'Question updated successfully.');
+        return redirect()->route('instructor.exams.show', $exam->exam_id)->with('success', 'Question updated successfully.');
     }
 }
