@@ -15,6 +15,22 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
+
+        $middleware->redirectUsersTo(function (Request $request) {
+            $user = $request->user();
+            if ($user) {
+                if ($user->role === 'student') {
+                    return route('student.exams.index');
+                } elseif ($user->role === 'instructor') {
+                    return route('instructor.exams.index');
+                } elseif ($user->role === 'admin') {
+                    return route('admin.dashboard');
+                }
+            }
+            return '/';
+        });
+
+        $middleware->redirectGuestsTo(fn () => route('login'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
