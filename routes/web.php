@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
     // Module 3 & 4: Test-Taking Environment & Student Submission (Student Portal - Requires Student Middleware)
     Route::middleware('role:student')->prefix('student')->name('student.')->group(function () {
         Route::get('/exams', [Student\ExamController::class, 'index'])->name('exams.index');
+        Route::get('/exams/{exam}', [Student\ExamController::class, 'show'])->name('exams.show');
         Route::post('/exams/{exam}/attempt', [Student\AttemptController::class, 'store'])->name('exams.attempt.store');
         Route::get('/exams/{exam}/attempt/{attempt}/take', [Student\AttemptController::class, 'show'])->name('exams.attempt.take');
         Route::post('/exams/{exam}/attempt/{attempt}/answers', [Student\AnswerController::class, 'store'])->name('exams.attempt.answers.store');
