@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/submissions/{attempt}/grade', [Instructor\SubmissionController::class, 'show'])->name('submissions.grade');
         Route::put('/answers/{answer}/grade', [Instructor\AnswerController::class, 'update'])->name('answers.grade.update');
         Route::post('/attempts/{attempt}/finalize', [Instructor\SubmissionController::class, 'finalize'])->name('attempts.finalize');
+        Route::delete('/attempts/{attempt}', [Instructor\SubmissionController::class, 'destroy'])->name('attempts.destroy');
     });
 
     // Module 3 & 4: Test-Taking Environment & Student Submission (Student Portal - Requires Student Middleware)

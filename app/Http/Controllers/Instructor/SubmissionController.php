@@ -73,4 +73,22 @@ class SubmissionController extends Controller
         return redirect()->route('instructor.submissions.index', $attempt->exam_id)
             ->with('success', 'Attempt finalized and graded successfully.');
     }
+
+    /**
+     * Delete a student exam attempt.
+     */
+    public function destroy($attemptId)
+    {
+        $attempt = ExamAttempt::with('exam')->findOrFail($attemptId);
+
+        if ($attempt->exam->instructor_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $examId = $attempt->exam_id;
+        $attempt->delete();
+
+        return redirect()->route('instructor.submissions.index', $examId)
+            ->with('success', 'Student attempt deleted successfully.');
+    }
 }

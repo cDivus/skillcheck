@@ -4,8 +4,13 @@
 <div class="row justify-content-center">
     <div class="col-md-10">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
+            <div class="d-flex gap-2">
                 <a href="{{ route('instructor.submissions.index', $attempt->exam_id) }}" class="btn btn-outline-secondary btn-sm">&larr; Back to Submissions</a>
+                <form action="{{ route('instructor.attempts.destroy', $attempt->attempt_id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this student attempt? This will permanently delete their answers and cannot be undone.');" style="display: inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger btn-sm">Delete Attempt</button>
+                </form>
             </div>
             <div>
                 <span class="badge bg-secondary fs-6">Status: <strong>{{ ucfirst($attempt->status) }}</strong></span>
