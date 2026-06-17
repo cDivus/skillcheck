@@ -43,14 +43,14 @@ class DatabaseSeeder extends Seeder
             'is_suspended' => false,
         ]);
 
-        // 2. Create Additional Mock Users (using standard English-based names from Factory)
+        // 2. Create Additional Mock Users
         $instructors = User::factory()->count(3)->create(['role' => 'instructor']);
         $students = User::factory()->count(8)->create(['role' => 'student']);
 
         $allInstructors = $instructors->concat([$instructor]);
         $allStudents = $students->concat([$student]);
 
-        // 3. Define Realistic English Exam Blueprints
+        // 3. Define Realistic English Exam Blueprints with MCQ, Short Answer (QA), and Essay
         $examBlueprints = [
             [
                 'title' => 'Introduction to Computer Science',
@@ -87,14 +87,13 @@ class DatabaseSeeder extends Seeder
                         ]
                     ],
                     [
-                        'text' => 'Explain the main difference between a compiler and an interpreter.',
+                        'text' => 'Which translating program converts source code to machine code all at once before execution?',
                         'type' => 'question_answer',
-                        'answer' => 'A compiler translates the entire source code into machine code at once before execution, whereas an interpreter translates and executes the code line-by-line during runtime.'
+                        'answers' => ['compiler', 'compilers']
                     ],
                     [
-                        'text' => 'What is recursion in computer programming, and what is its essential stopping condition called?',
-                        'type' => 'question_answer',
-                        'answer' => 'Recursion is a programming technique where a function calls itself to solve a smaller subproblem. Its essential stopping condition is called the base case.'
+                        'text' => 'Explain recursion in programming and detail the importance of a base case.',
+                        'type' => 'essay',
                     ]
                 ]
             ],
@@ -133,14 +132,13 @@ class DatabaseSeeder extends Seeder
                         ]
                     ],
                     [
-                        'text' => 'Describe the structure of DNA and name the four nitrogenous bases that make it up.',
+                        'text' => 'What acronym is used for the double-helix molecule carrying genetic instructions in living organisms?',
                         'type' => 'question_answer',
-                        'answer' => 'DNA has a double-helix structure. The four nitrogenous bases are Adenine (A), Thymine (T), Cytosine (C), and Guanine (G).'
+                        'answers' => ['dna', 'deoxyribonucleic acid']
                     ],
                     [
                         'text' => 'Explain the process of natural selection as described by Charles Darwin.',
-                        'type' => 'question_answer',
-                        'answer' => 'Natural selection is the process where organisms with traits better suited to their environment are more likely to survive, reproduce, and pass those traits to the next generation.'
+                        'type' => 'essay',
                     ]
                 ]
             ],
@@ -179,14 +177,13 @@ class DatabaseSeeder extends Seeder
                         ]
                     ],
                     [
-                        'text' => 'What was the primary goal of the Manhattan Project during World War II?',
+                        'text' => 'Which European country was forced to accept sole responsibility for starting WWI under the Treaty of Versailles?',
                         'type' => 'question_answer',
-                        'answer' => 'The primary goal of the Manhattan Project was the development of the first atomic weapons.'
+                        'answers' => ['germany']
                     ],
                     [
                         'text' => 'Summarize the primary terms of the Treaty of Versailles and its impact on post-WWI Germany.',
-                        'type' => 'question_answer',
-                        'answer' => 'The Treaty of Versailles forced Germany to accept sole blame for the war, pay massive reparations, yield territories, and drastically reduce its military, creating severe economic instability and resentment.'
+                        'type' => 'essay',
                     ]
                 ]
             ],
@@ -225,14 +222,13 @@ class DatabaseSeeder extends Seeder
                         ]
                     ],
                     [
-                        'text' => 'Describe the theme of revenge in Hamlet and how it affects the protagonist.',
+                        'text' => 'Which legendary English playwright and poet wrote the tragedy Hamlet?',
                         'type' => 'question_answer',
-                        'answer' => 'Revenge drives the plot. Hamlet is urged by his father\'s ghost to avenge his murder, leading to deep existential hesitation, feigned madness, and ultimately tragic deaths.'
+                        'answers' => ['shakespeare', 'william shakespeare']
                     ],
                     [
-                        'text' => 'What role does Polonius play in the court, and what is the consequence of his spying?',
-                        'type' => 'question_answer',
-                        'answer' => 'Polonius is the Lord Chamberlain. His habit of spying behind tapestries leads to Hamlet accidentally stabbing and killing him.'
+                        'text' => 'Describe the theme of revenge in Hamlet and how it affects the protagonist.',
+                        'type' => 'essay',
                     ]
                 ]
             ]
@@ -240,7 +236,6 @@ class DatabaseSeeder extends Seeder
 
         // 4. Populate Exams, Questions, Options, Attempts, and Answers
         foreach ($examBlueprints as $blueprint) {
-            // Pick a random instructor
             $randomInst = $allInstructors->random();
 
             $exam = Exam::create([
@@ -254,7 +249,6 @@ class DatabaseSeeder extends Seeder
                 'viewable_responses' => true,
             ]);
 
-            // Save question IDs to help build random attempts
             $createdQuestions = [];
 
             foreach ($blueprint['questions'] as $index => $qData) {
@@ -280,6 +274,16 @@ class DatabaseSeeder extends Seeder
                             'is_correct' => $oData['correct'],
                         ]);
                     }
+                } elseif ($qData['type'] === 'question_answer') {
+                    // Seed correct answers into Options table for short answer matching
+                    foreach ($qData['answers'] as $aIdx => $answerText) {
+                        Option::create([
+                            'question_id' => $question->question_id,
+                            'order_index' => $aIdx + 1,
+                            'option_text' => $answerText,
+                            'is_correct' => true,
+                        ]);
+                    }
                 }
             }
 
@@ -302,22 +306,38 @@ class DatabaseSeeder extends Seeder
                     foreach ($createdQuestions as $q) {
                         $selectedOpt = null;
                         $textAns = null;
-                        $correct = false;
+                        $marksAwarded = 0;
 
                         if ($q->type === 'multiple_choice') {
-                            // Find options
                             $options = $q->options;
-                            // Pick one random option (some correct, some incorrect)
                             $chosenOpt = $options->random();
                             $selectedOpt = $chosenOpt->option_id;
-                            $correct = $chosenOpt->is_correct;
-                        } else {
-                            // Look up corresponding blueprint to find sample answer
-                            $correct = rand(0, 1) === 1; // 50% chance of being right
-                            if ($correct) {
-                                $textAns = "The correct answer would state: " . $q->question_text . " which relates to standard curriculum definitions.";
+                            
+                            if ($attempt->status === 'graded' || $attempt->status === 'submitted') {
+                                // MCQs are auto-graded immediately upon submission
+                                $marksAwarded = $chosenOpt->is_correct ? $q->marks : 0;
+                            }
+                        } elseif ($q->type === 'question_answer') {
+                            // Fetch correct answer list
+                            $correctTexts = $q->options->pluck('option_text')->toArray();
+                            
+                            // 70% chance to write a correct answer
+                            $isCorrect = (rand(1, 10) <= 7);
+                            $textAns = $isCorrect ? $correctTexts[0] : 'incorrect short answer';
+                            
+                            if ($attempt->status === 'graded' || $attempt->status === 'submitted') {
+                                // QAs are auto-graded immediately upon submission
+                                $marksAwarded = $isCorrect ? $q->marks : 0;
+                            }
+                        } elseif ($q->type === 'essay') {
+                            $textAns = "This is a detailed student response explaining the essay topic in full paragraphs. It covers key theoretical aspects of the question.";
+                            
+                            if ($attempt->status === 'graded') {
+                                // Graded attempts have manual grading already completed
+                                $marksAwarded = rand(0, 1) === 1 ? $q->marks : 5.00;
                             } else {
-                                $textAns = "Incorrect answer, student response was off topic.";
+                                // Submitted attempts are waiting for manual instructor check, so marks are null
+                                $marksAwarded = null;
                             }
                         }
 
@@ -326,7 +346,7 @@ class DatabaseSeeder extends Seeder
                             'question_id' => $q->question_id,
                             'selected_option' => $selectedOpt,
                             'text_answer' => $textAns,
-                            'marks_awarded' => $attempt->status === 'graded' ? ($correct ? $q->marks : 0) : 0,
+                            'marks_awarded' => $marksAwarded,
                         ]);
                     }
                 }
