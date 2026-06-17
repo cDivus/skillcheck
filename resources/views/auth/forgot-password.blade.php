@@ -5,7 +5,7 @@
     <div class="col-md-5">
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white py-3">
-                <h4 class="mb-0 text-center">Login</h4>
+                <h4 class="mb-0 text-center">Forgot Password</h4>
             </div>
             <div class="card-body p-4">
                 @if (session('status'))
@@ -24,29 +24,25 @@
                     </div>
                 @endif
 
-                <form action="{{ route('login') }}" method="POST">
+                <p class="text-muted mb-4">
+                    Enter your email address, and we will send you a link to reset your password.
+                </p>
+
+                <form action="{{ route('password.email') }}" method="POST">
                     @csrf
                     <div class="mb-3">
-                        <label for="login" class="form-label">Username or Email:</label>
-                        <input type="text" name="login" id="login" class="form-control" value="{{ old('login') }}" required autofocus>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <label for="password" class="form-label mb-0">Password:</label>
-                            <a href="{{ route('password.request') }}" class="text-decoration-none small">Forgot Password?</a>
-                        </div>
-                        <input type="password" name="password" id="password" class="form-control mt-1" required>
+                        <label for="email" class="form-label">Email Address:</label>
+                        <input type="email" name="email" id="email" class="form-control" value="{{ old('email') }}" required autofocus>
                     </div>
 
                     <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary">Login</button>
+                        <button type="submit" class="btn btn-primary">Send Password Reset Link</button>
                     </div>
                 </form>
 
                 <hr class="my-4">
 
-                <p class="text-center mb-0">Don't have an account? <a href="{{ route('register') }}" class="text-decoration-none">Register here</a></p>
+                <p class="text-center mb-0"><a href="{{ route('login') }}" class="text-decoration-none">Back to Login</a></p>
             </div>
         </div>
     </div>
