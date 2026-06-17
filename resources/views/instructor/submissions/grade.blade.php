@@ -89,22 +89,49 @@
                     </div>
 
                     <!-- Grading controls / feedback -->
-                    @if ($question->type === 'essay')
+                    @if ($question->type === 'essay' || $question->type === 'question_answer')
+                        @if ($question->type === 'question_answer')
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="fw-bold me-2">Auto-Graded Marks:</span>
+                                @if ($answer)
+                                    <span class="badge bg-{{ $answer->marks_awarded > 0 ? 'success' : 'danger' }} fs-6">
+                                        {{ number_format($answer->marks_awarded, 1) }} / {{ number_format($question->marks, 1) }}
+                                    </span>
+                                @else
+                                    <span class="badge bg-danger fs-6">0.0 / {{ number_format($question->marks, 1) }}</span>
+                                @endif
+                            </div>
+                            <div class="mb-3 small">
+                                <strong>Correct Setup:</strong>
+                                <ul class="mb-0 ps-3">
+                                    @foreach($question->options as $opt)
+                                        @if($opt->is_correct)
+                                            <li>{{ $opt->option_text }} <span class="badge bg-success bg-opacity-75 ms-1">Correct</span></li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         <form action="{{ route('instructor.answers.grade.update', $answer ? $answer->answer_id : 0) }}" method="POST" class="row g-3 align-items-center">
                             @csrf
                             @method('PUT')
                             <div class="col-auto">
-                                <label for="marks-{{ $question->question_id }}" class="col-form-label fw-bold text-warning">Award Marks:</label>
+                                <label for="marks-{{ $question->question_id }}" class="col-form-label fw-bold text-{{ $question->type === 'essay' ? 'warning' : 'primary' }}">
+                                    {{ $question->type === 'essay' ? 'Award Marks:' : 'Override Marks:' }}
+                                </label>
                             </div>
                             <div class="col-auto">
                                 <input type="number" step="0.01" min="0" max="{{ $question->marks }}" 
                                     name="marks_awarded" id="marks-{{ $question->question_id }}" 
                                     class="form-control form-control-sm" style="width: 100px;" 
-                                    value="{{ $answer ? $answer->marks_awarded : '' }}" required
+                                    value="{{ $answer && $answer->marks_awarded !== null ? (float)$answer->marks_awarded : '' }}" required
                                     {{ !$answer ? 'disabled' : '' }}>
                             </div>
                             <div class="col-auto">
-                                <button type="submit" class="btn btn-warning btn-sm" {{ !$answer ? 'disabled' : '' }}>Save Marks</button>
+                                <button type="submit" class="btn btn-{{ $question->type === 'essay' ? 'warning' : 'primary' }} btn-sm" {{ !$answer ? 'disabled' : '' }}>
+                                    {{ $question->type === 'essay' ? 'Save Marks' : 'Override Marks' }}
+                                </button>
                             </div>
                             @if (!$answer)
                                 <div class="col-auto text-muted small">Cannot grade a non-existent answer.</div>
