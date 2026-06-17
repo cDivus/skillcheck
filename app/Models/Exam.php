@@ -42,4 +42,13 @@ class Exam extends Model
     {
         return $this->hasMany(Question::class, 'exam_id', 'exam_id')->orderBy('order_index');
     }
+
+    protected static function booted()
+    {
+        static::deleting(function ($exam) {
+            $exam->questions->each(function ($question) {
+                $question->delete();
+            });
+        });
+    }
 }
