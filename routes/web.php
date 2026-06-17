@@ -70,8 +70,13 @@ Route::middleware('auth')->group(function () {
     // Module 5: Admin Operations (Admin Portal - Requires Admin Middleware)
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
+        
+        // User management
         Route::get('/users', [Admin\UserController::class, 'index'])->name('users.index');
-        Route::get('/users/{user}/edit', [Admin\UserController::class, 'edit'])->name('users.edit');
-        Route::put('/users/{user}/role', [Admin\UserController::class, 'updateRole'])->name('users.role.update');
+        Route::put('/users/{user}/toggle-status', [Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+
+        // Exam moderation
+        Route::get('/exams', [Admin\ExamController::class, 'index'])->name('exams.index');
+        Route::delete('/exams/{exam}', [Admin\ExamController::class, 'destroy'])->name('exams.destroy');
     });
 });

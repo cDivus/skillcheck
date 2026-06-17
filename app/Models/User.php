@@ -28,6 +28,7 @@ class User extends Authenticatable
         'password_hash',
         'role',
         'profile_picture',
+        'is_suspended',
     ];
 
     /**
@@ -55,6 +56,7 @@ class User extends Authenticatable
     {
         return [
             'password_hash' => 'hashed',
+            'is_suspended' => 'boolean',
         ];
     }
 }

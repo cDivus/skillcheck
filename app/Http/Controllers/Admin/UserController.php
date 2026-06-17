@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -10,36 +11,44 @@ class UserController extends Controller
     /**
      * Display a listing of all users.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // TODO: Retrieve all users (with roles)
-        // TODO: Pass the users list to the admin.users.index view
+        $query = User::query();
 
-        return view('admin.users.index');
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('username', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->input('role'));
+        }
+
+        $users = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
+
+        return view('admin.users.index', compact('users'));
     }
 
     /**
-     * Show the form for editing the specified user's role.
+     * Toggle the suspension status of a user.
      */
-    public function edit($userId)
+    public function toggleStatus($userId)
     {
-        // TODO: Find user or fail (User::findOrFail($userId))
-        // TODO: Pass user details to the admin.users.edit view
+        $user = User::findOrFail($userId);
 
-        return view('admin.users.edit');
-    }
+        // Prevent self-suspension
+        if ($user->user_id === auth()->id()) {
+            return back()->with('error', 'You cannot suspend your own account.');
+        }
 
-    /**
-     * Update the user's role.
-     */
-    public function updateRole(Request $request, $userId)
-    {
-        // TODO: Validate role input (must be one of: student, instructor, admin)
-        // TODO: Find the User record
-        // TODO: Update user's role field to $request->role
-        // TODO: Save to database
-        // TODO: Redirect back or to users list with success message
+        $user->is_suspended = !$user->is_suspended;
+        $user->save();
 
-        return redirect()->route('admin.users.index');
+        $statusMessage = $user->is_suspended ? 'suspended' : 'activated';
+
+        return back()->with('success', "User '{$user->username}' has been {$statusMessage} successfully.");
     }
 }
