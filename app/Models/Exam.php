@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Exam extends Model
 {
-    use HasUuids;
+    use HasUuids, HasFactory;
 
     protected $table = 'Exams';
     protected $primaryKey = 'exam_id';
