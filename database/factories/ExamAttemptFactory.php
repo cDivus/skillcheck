@@ -24,7 +24,7 @@ class ExamAttemptFactory extends Factory
             'student_id' => User::where('role', 'student')->inRandomOrder()->first()?->user_id ?? User::factory()->create(['role' => 'student'])->user_id,
             'start_time' => now()->subHours(2),
             'end_time' => now()->subHours(1),
-            'status' => $this->faker->randomElement(['in_progress', 'submitted', 'graded']),
+            'status' => $this->faker->randomElement(['submitted', 'graded']),
             'question_order' => null,
         ];
     }

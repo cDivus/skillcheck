@@ -190,6 +190,7 @@ class DatabaseSeeder extends Seeder
             [
                 'title' => 'English Literature: Hamlet Analysis',
                 'description' => 'Critical analysis exam exploring character motivations, themes of tragedy, and Shakespearean soliloquies.',
+                'viewable_responses' => false,
                 'questions' => [
                     [
                         'text' => 'Who is the ghost that appears in the opening scenes of Hamlet?',
@@ -246,7 +247,7 @@ class DatabaseSeeder extends Seeder
                 'end_time' => now()->addDays(5),
                 'duration_s' => 3600, // 1 hour
                 'randomize_questions' => rand(0, 1) === 1,
-                'viewable_responses' => true,
+                'viewable_responses' => $blueprint['viewable_responses'] ?? true,
             ]);
 
             $createdQuestions = [];
@@ -287,68 +288,66 @@ class DatabaseSeeder extends Seeder
                 }
             }
 
-            // Generate 3 Mock student attempts for this exam
-            $allStudents->random(3)->each(function ($stud) use ($exam, $createdQuestions) {
-                $status = rand(0, 2);
-                $statusStr = ['in_progress', 'submitted', 'graded'][$status];
+            // Generate Mock student attempts for this exam
+            $numAttempts = (isset($blueprint['viewable_responses']) && !$blueprint['viewable_responses']) ? 1 : 3;
+            $allStudents->random($numAttempts)->each(function ($stud) use ($exam, $createdQuestions) {
+                $statusStr = ['submitted', 'graded'][rand(0, 1)];
 
                 $attempt = ExamAttempt::create([
                     'exam_id' => $exam->exam_id,
                     'student_id' => $stud->user_id,
                     'start_time' => now()->subMinutes(rand(10, 45)),
-                    'end_time' => $statusStr !== 'in_progress' ? now() : null,
+                    'end_time' => now(),
                     'status' => $statusStr,
                     'question_order' => collect($createdQuestions)->pluck('question_id')->toArray(),
                 ]);
 
-                // If attempt is submitted or graded, create answers
-                if ($statusStr !== 'in_progress') {
-                    foreach ($createdQuestions as $q) {
-                        $selectedOpt = null;
-                        $textAns = null;
-                        $marksAwarded = 0;
+                // Create answers
+                foreach ($createdQuestions as $q) {
+                    $selectedOpt = null;
+                    $textAns = null;
+                    $marksAwarded = 0;
 
-                        if ($q->type === 'multiple_choice') {
-                            $options = $q->options;
-                            $chosenOpt = $options->random();
-                            $selectedOpt = $chosenOpt->option_id;
-                            
-                            if ($attempt->status === 'graded' || $attempt->status === 'submitted') {
-                                // MCQs are auto-graded immediately upon submission
-                                $marksAwarded = $chosenOpt->is_correct ? $q->marks : 0;
-                            }
-                        } elseif ($q->type === 'question_answer') {
-                            // Fetch correct answer list
-                            $correctTexts = $q->options->pluck('option_text')->toArray();
-                            
-                            // 70% chance to write a correct answer
-                            $isCorrect = (rand(1, 10) <= 7);
-                            $textAns = $isCorrect ? $correctTexts[0] : 'incorrect short answer';
-                            
-                            if ($attempt->status === 'graded' || $attempt->status === 'submitted') {
-                                // QAs are auto-graded immediately upon submission
-                                $marksAwarded = $isCorrect ? $q->marks : 0;
-                            }
-                        } elseif ($q->type === 'essay') {
-                            $textAns = "This is a detailed student response explaining the essay topic in full paragraphs. It covers key theoretical aspects of the question.";
-                            
-                            if ($attempt->status === 'graded') {
-                                // Graded attempts have manual grading already completed
-                                $marksAwarded = rand(0, 1) === 1 ? $q->marks : 5.00;
-                            } else {
-                                // Submitted attempts are waiting for manual instructor check, so marks are null
-                                $marksAwarded = null;
-                            }
+                    if ($q->type === 'multiple_choice') {
+                        $options = $q->options;
+                        $chosenOpt = $options->random();
+                        $selectedOpt = $chosenOpt->option_id;
+                        
+                        if ($attempt->status === 'graded' || $attempt->status === 'submitted') {
+                            // MCQs are auto-graded immediately upon submission
+                            $marksAwarded = $chosenOpt->is_correct ? $q->marks : 0;
                         }
-
-                        StudentAnswer::create([
-                            'attempt_id' => $attempt->attempt_id,
-                            'question_id' => $q->question_id,
-                            'selected_option' => $selectedOpt,
-                            'text_answer' => $textAns,
-                            'marks_awarded' => $marksAwarded,
-                        ]);
+                    } elseif ($q->type === 'question_answer') {
+                        // Fetch correct answer list
+                        $correctTexts = $q->options->pluck('option_text')->toArray();
+                        
+                        // 70% chance to write a correct answer
+                        $isCorrect = (rand(1, 10) <= 7);
+                        $textAns = $isCorrect ? $correctTexts[0] : 'incorrect short answer';
+                        
+                        if ($attempt->status === 'graded' || $attempt->status === 'submitted') {
+                            // QAs are auto-graded immediately upon submission
+                            $marksAwarded = $isCorrect ? $q->marks : 0;
+                        }
+                    } elseif ($q->type === 'essay') {
+                        $textAns = "This is a detailed student response explaining the essay topic in full paragraphs. It covers key theoretical aspects of the question.";
+                        
+                        if ($attempt->status === 'graded') {
+                            // Graded attempts have manual grading already completed
+                            $marksAwarded = rand(0, 1) === 1 ? $q->marks : 5.00;
+                        } else {
+                            // Submitted attempts are waiting for manual instructor check, so marks are null
+                            $marksAwarded = null;
+                        }
                     }
+
+                    StudentAnswer::create([
+                        'attempt_id' => $attempt->attempt_id,
+                        'question_id' => $q->question_id,
+                        'selected_option' => $selectedOpt,
+                        'text_answer' => $textAns,
+                        'marks_awarded' => $marksAwarded,
+                    ]);
                 }
             });
         }
