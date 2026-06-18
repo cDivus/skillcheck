@@ -259,7 +259,7 @@ class DatabaseSeeder extends Seeder
                     'question_text' => $qData['text'],
                     'image_url' => null,
                     'type' => $qData['type'],
-                    'time_limit_s' => 180, // 3 minutes per question
+                    'time_limit_s' => 15, // 15 seconds per question
                     'marks' => 10,
                     'is_locked' => false,
                 ]);

@@ -29,7 +29,14 @@
             <div class="card mb-4 shadow-sm question-card">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 text-secondary">Question {{ $page }}</h5>
-                    <span class="badge bg-info text-white">{{ number_format($question->marks, 1) }} Marks</span>
+                    <div class="d-flex align-items-center gap-2">
+                        @if($questionTimeLeft !== null)
+                            <span class="badge bg-warning text-dark">
+                                Question Timer: <span id="question-timer-display" class="font-monospace fw-bold">--:--</span>
+                            </span>
+                        @endif
+                        <span class="badge bg-info text-white">{{ number_format($question->marks, 1) }} Marks</span>
+                    </div>
                 </div>
                 <div class="card-body">
                     <!-- Question Text -->
@@ -144,6 +151,41 @@
 
     setInterval(updateCountdown, 1000);
     updateCountdown();
+
+    @if($questionTimeLeft !== null)
+    // Live countdown timer for the specific question
+    let questionSecondsLeft = parseInt("{{ $questionTimeLeft }}");
+    const questionTimerDisplay = document.getElementById('question-timer-display');
+
+    function updateQuestionCountdown() {
+        if (questionSecondsLeft <= 0) {
+            questionTimerDisplay.textContent = "00:00";
+            
+            // Append action input and submit
+            const nextAction = "{{ $page === $questionsCount ? 'submit' : 'next' }}";
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = nextAction;
+            form.appendChild(actionInput);
+            
+            form.submit();
+            return;
+        }
+
+        const mins = Math.floor(questionSecondsLeft / 60);
+        const secs = questionSecondsLeft % 60;
+
+        questionTimerDisplay.textContent = 
+            String(mins).padStart(2, '0') + ':' + 
+            String(secs).padStart(2, '0');
+
+        questionSecondsLeft--;
+    }
+
+    setInterval(updateQuestionCountdown, 1000);
+    updateQuestionCountdown();
+    @endif
 
     // Client-side validation: lock next/submit button if unanswered
     const submitBtn = form.querySelector('.next-question-btn');

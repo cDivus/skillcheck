@@ -145,17 +145,25 @@ class AttemptController extends Controller
             $page = 1;
         }
 
-        // Check for first unanswered question up to the current page index
-        for ($i = 0; $i < $page - 1; $i++) {
+        // Find the first unanswered question page index
+        $firstUnansweredPage = 1;
+        for ($i = 0; $i < $questionsCount; $i++) {
             $qId = $orderedQuestionIds[$i];
             if (!isset($answers[$qId])) {
-                $unansweredPage = $i + 1;
-                return redirect()->route('student.exams.attempt.take', [
-                    'exam' => $examId,
-                    'attempt' => $attemptId,
-                    'page' => $unansweredPage
-                ])->with('error', 'You must answer the current question before proceeding.');
+                $firstUnansweredPage = $i + 1;
+                break;
+            } else {
+                $firstUnansweredPage = $questionsCount;
             }
+        }
+
+        // Enforce strict sequential order: cannot skip forward or go back
+        if ($page !== $firstUnansweredPage) {
+            return redirect()->route('student.exams.attempt.take', [
+                'exam' => $examId,
+                'attempt' => $attemptId,
+                'page' => $firstUnansweredPage
+            ]);
         }
 
         // Fetch just the current question
@@ -164,12 +172,51 @@ class AttemptController extends Controller
             ->where('question_id', $orderedQuestionIds[$page - 1])
             ->first();
 
+        // Track and calculate question-level time limit
+        $questionTimeLeft = null;
+        if ($question->time_limit_s) {
+            $sessionKey = "exam_attempt_{$attemptId}_question_{$question->question_id}_start";
+            if (!session()->has($sessionKey)) {
+                session()->put($sessionKey, now()->timestamp);
+            }
+            $questionStartedAt = session()->get($sessionKey);
+            $elapsed = now()->timestamp - $questionStartedAt;
+            $questionTimeLeft = max(0, $question->time_limit_s - $elapsed);
+
+            // If question time is expired, auto-submit blank answer and move forward
+            if ($questionTimeLeft <= 0) {
+                $emptyAnswer = \App\Models\StudentAnswer::firstOrNew([
+                    'attempt_id' => $attemptId,
+                    'question_id' => $question->question_id,
+                ]);
+                if (!$emptyAnswer->exists) {
+                    if ($question->type === 'essay' || $question->type === 'question_answer') {
+                        $emptyAnswer->text_answer = '';
+                    }
+                    $emptyAnswer->save();
+                }
+
+                if ($page === $questionsCount) {
+                    $attempt->submit();
+                    return redirect()->route('student.exams.index')
+                        ->with('error', 'Time has expired for the final question. Your exam has been submitted.');
+                }
+
+                return redirect()->route('student.exams.attempt.take', [
+                    'exam' => $examId,
+                    'attempt' => $attemptId,
+                    'page' => $page + 1
+                ])->with('error', 'Time has expired for the previous question.');
+            }
+        }
+
         return view('student.attempts.take', compact(
             'attempt',
             'exam',
             'question',
             'answers',
             'timeLeft',
+            'questionTimeLeft',
             'page',
             'questionsCount'
         ));
