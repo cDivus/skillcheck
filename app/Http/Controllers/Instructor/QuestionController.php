@@ -67,38 +67,8 @@ class QuestionController extends Controller
             'is_locked' => $request->boolean('is_locked'),
         ]);
 
-        // Save options if the question type is multiple_choice or question_answer
-        if (in_array($validated['type'], ['multiple_choice', 'question_answer']) && !empty($validated['options'])) {
-            $correctOptions = $validated['correct_options'] ?? [];
-            $optionIndex = 1;
-            foreach ($validated['options'] as $idx => $optionText) {
-                if ($optionText !== null && trim($optionText) !== '') {
-                    Option::create([
-                        'question_id' => $question->question_id,
-                        'order_index' => $optionIndex++,
-                        'option_text' => trim($optionText),
-                        'is_correct' => ($validated['type'] === 'question_answer') ? true : in_array($idx, $correctOptions),
-                    ]);
-                }
-            }
-        }
-
-        // Auto-seed options for True/False question
-        if ($validated['type'] === 'true_false') {
-            $tfCorrect = $validated['tf_correct'] ?? 'True';
-            Option::create([
-                'question_id' => $question->question_id,
-                'order_index' => 1,
-                'option_text' => 'True',
-                'is_correct' => ($tfCorrect === 'True'),
-            ]);
-            Option::create([
-                'question_id' => $question->question_id,
-                'order_index' => 2,
-                'option_text' => 'False',
-                'is_correct' => ($tfCorrect === 'False'),
-            ]);
-        }
+        // Save options using the model method
+        $question->syncOptions($validated);
 
         return redirect()->route('instructor.exams.show', $exam->exam_id)->with('success', 'Question added successfully.');
     }
@@ -183,85 +153,8 @@ class QuestionController extends Controller
             'is_locked' => $request->boolean('is_locked'),
         ]);
 
-        // Process options based on question type
-        if (in_array($validated['type'], ['multiple_choice', 'question_answer'])) {
-            $submittedOptions = $request->input('options', []);
-            $correctIndices = $request->input('correct_options', []);
-            $keptOptionIds = [];
-            $optionIndex = 1;
-
-            foreach ($submittedOptions as $idx => $optData) {
-                $optionText = $optData['option_text'] ?? '';
-                if ($optionText === null || trim($optionText) === '') {
-                    continue;
-                }
-
-                $optionId = $optData['option_id'] ?? null;
-                $isCorrect = ($validated['type'] === 'question_answer') ? true : in_array($idx, $correctIndices);
-
-                if ($optionId) {
-                    $option = Option::where('question_id', $question->question_id)
-                        ->find($optionId);
-                    if ($option) {
-                        $option->update([
-                            'option_text' => trim($optionText),
-                            'is_correct' => $isCorrect,
-                            'order_index' => $optionIndex++,
-                        ]);
-                        $keptOptionIds[] = $option->option_id;
-                    }
-                } else {
-                    $newOption = Option::create([
-                        'question_id' => $question->question_id,
-                        'order_index' => $optionIndex++,
-                        'option_text' => trim($optionText),
-                        'is_correct' => $isCorrect,
-                    ]);
-                    $keptOptionIds[] = $newOption->option_id;
-                }
-            }
-
-            // Delete removed options
-            Option::where('question_id', $question->question_id)
-                ->whereNotIn('option_id', $keptOptionIds)
-                ->delete();
-
-        } elseif ($validated['type'] === 'true_false') {
-            $tfCorrect = $request->input('tf_correct', 'True');
-            
-            $options = Option::where('question_id', $question->question_id)->get();
-            $trueOption = $options->firstWhere('option_text', 'True');
-            $falseOption = $options->firstWhere('option_text', 'False');
-
-            if ($trueOption) {
-                $trueOption->update(['is_correct' => ($tfCorrect === 'True'), 'order_index' => 1]);
-            } else {
-                $trueOption = Option::create([
-                    'question_id' => $question->question_id,
-                    'order_index' => 1,
-                    'option_text' => 'True',
-                    'is_correct' => ($tfCorrect === 'True'),
-                ]);
-            }
-
-            if ($falseOption) {
-                $falseOption->update(['is_correct' => ($tfCorrect === 'False'), 'order_index' => 2]);
-            } else {
-                $falseOption = Option::create([
-                    'question_id' => $question->question_id,
-                    'order_index' => 2,
-                    'option_text' => 'False',
-                    'is_correct' => ($tfCorrect === 'False'),
-                ]);
-            }
-
-            Option::where('question_id', $question->question_id)
-                ->whereNotIn('option_id', [$trueOption->option_id, $falseOption->option_id])
-                ->delete();
-
-        } elseif ($validated['type'] === 'essay') {
-            Option::where('question_id', $question->question_id)->delete();
-        }
+        // Process and sync options using the model method
+        $question->syncOptions($validated);
 
         return redirect()->route('instructor.exams.show', $exam->exam_id)->with('success', 'Question updated successfully.');
     }
@@ -431,61 +324,24 @@ class QuestionController extends Controller
                         'is_locked' => !empty($qData['is_locked']),
                     ]);
 
-                    // Save options/answers depending on the question type
+                    // Validate JSON data structures
                     if ($qData['type'] === 'multiple_choice') {
                         if (empty($qData['options']) || !is_array($qData['options'])) {
                             throw new \Exception("Question #{$questionNum} of type 'multiple_choice' must contain an array of 'options'.");
                         }
-
-                        $optionIndex = 1;
                         foreach ($qData['options'] as $opt) {
                             if (!isset($opt['option_text'])) {
                                 throw new \Exception("An option in Question #{$questionNum} is missing 'option_text'.");
                             }
-                            Option::create([
-                                'question_id' => $question->question_id,
-                                'order_index' => $optionIndex++,
-                                'option_text' => trim($opt['option_text']),
-                                'is_correct' => !empty($opt['is_correct']),
-                            ]);
                         }
-
-                    } elseif ($qData['type'] === 'true_false') {
-                        $correctAnswer = isset($qData['correct_answer']) ? $qData['correct_answer'] : 'True';
-                        $correctVal = filter_var($correctAnswer, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-                        if ($correctVal === null) {
-                            $correctVal = (strtolower(trim($correctAnswer)) === 'true');
-                        }
-
-                        Option::create([
-                            'question_id' => $question->question_id,
-                            'order_index' => 1,
-                            'option_text' => 'True',
-                            'is_correct' => $correctVal === true,
-                        ]);
-                        Option::create([
-                            'question_id' => $question->question_id,
-                            'order_index' => 2,
-                            'option_text' => 'False',
-                            'is_correct' => $correctVal === false,
-                        ]);
-
                     } elseif ($qData['type'] === 'question_answer') {
                         if (empty($qData['correct_answers'])) {
                             throw new \Exception("Question #{$questionNum} of type 'question_answer' must contain 'correct_answers'.");
                         }
-
-                        $answers = (array) $qData['correct_answers'];
-                        $optionIndex = 1;
-                        foreach ($answers as $ans) {
-                            Option::create([
-                                'question_id' => $question->question_id,
-                                'order_index' => $optionIndex++,
-                                'option_text' => trim($ans),
-                                'is_correct' => true,
-                            ]);
-                        }
                     }
+
+                    // Save and sync options using the model method
+                    $question->syncOptions($qData);
                 }
             });
         } catch (\Exception $e) {
