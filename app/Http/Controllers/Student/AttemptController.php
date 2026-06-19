@@ -185,7 +185,7 @@ class AttemptController extends Controller
 
             // If question time is expired, auto-submit blank answer and move forward
             if ($questionTimeLeft <= 0) {
-                $emptyAnswer = \App\Models\StudentAnswer::firstOrNew([
+                $emptyAnswer = StudentAnswer::firstOrNew([
                     'attempt_id' => $attemptId,
                     'question_id' => $question->question_id,
                 ]);
@@ -288,7 +288,7 @@ class AttemptController extends Controller
     /**
      * Generate question order for the exam attempt, preserving locked question positions.
      */
-    protected function generateQuestionOrder(\App\Models\Exam $exam)
+    protected function generateQuestionOrder(Exam $exam)
     {
         $questions = $exam->questions()->orderBy('order_index')->get();
 

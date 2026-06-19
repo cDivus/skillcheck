@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Exam;
 use App\Models\ExamAttempt;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class ExamController extends Controller
 {
@@ -17,12 +18,12 @@ class ExamController extends Controller
             ->get();
 
         foreach ($attempts as $attempt) {
-            $startTime = \Carbon\Carbon::parse($attempt->start_time);
+            $startTime = Carbon::parse($attempt->start_time);
             $endTime = $startTime->copy()->addSeconds($attempt->exam->duration_s);
             $isExpired = now()->greaterThanOrEqualTo($endTime);
 
             if ($attempt->exam->end_time) {
-                $examEndTime = \Carbon\Carbon::parse($attempt->exam->end_time);
+                $examEndTime = Carbon::parse($attempt->exam->end_time);
                 if (now()->greaterThanOrEqualTo($examEndTime)) {
                     $isExpired = true;
                 }
@@ -50,12 +51,12 @@ class ExamController extends Controller
 
         if ($attempt) {
             if ($attempt->status === 'in_progress') {
-                $startTime = \Carbon\Carbon::parse($attempt->start_time);
+                $startTime = Carbon::parse($attempt->start_time);
                 $endTime = $startTime->copy()->addSeconds($exam->duration_s);
                 $isExpired = now()->greaterThanOrEqualTo($endTime);
 
                 if ($exam->end_time) {
-                    $examEndTime = \Carbon\Carbon::parse($exam->end_time);
+                    $examEndTime = Carbon::parse($exam->end_time);
                     if (now()->greaterThanOrEqualTo($examEndTime)) {
                         $isExpired = true;
                     }

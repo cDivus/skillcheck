@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -126,7 +127,7 @@ class AuthController extends Controller
      */
     public function updateProfile(Request $request)
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         $validated = $request->validate([
@@ -146,7 +147,7 @@ class AuthController extends Controller
         if ($request->hasFile('profile_picture')) {
             // Delete old profile picture if exists
             if ($user->profile_picture) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->profile_picture);
+                Storage::disk('public')->delete($user->profile_picture);
             }
             $updateData['profile_picture'] = $request->file('profile_picture')->store('profile_pictures', 'public');
         }

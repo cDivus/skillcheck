@@ -7,6 +7,7 @@ use App\Models\Exam;
 use App\Models\ExamAttempt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class SubmissionController extends Controller
 {
@@ -22,12 +23,12 @@ class SubmissionController extends Controller
 
         foreach ($allAttempts as $attempt) {
             if ($attempt->status === 'in_progress') {
-                $startTime = \Carbon\Carbon::parse($attempt->start_time);
+                $startTime = Carbon::parse($attempt->start_time);
                 $endTime = $startTime->copy()->addSeconds($exam->duration_s);
                 $isExpired = now()->greaterThanOrEqualTo($endTime);
 
                 if ($exam->end_time) {
-                    $examEndTime = \Carbon\Carbon::parse($exam->end_time);
+                    $examEndTime = Carbon::parse($exam->end_time);
                     if (now()->greaterThanOrEqualTo($examEndTime)) {
                         $isExpired = true;
                     }
@@ -65,12 +66,12 @@ class SubmissionController extends Controller
 
         // If it's in progress, check if it's expired to auto-submit on-the-fly
         if ($attempt->status === 'in_progress') {
-            $startTime = \Carbon\Carbon::parse($attempt->start_time);
+            $startTime = Carbon::parse($attempt->start_time);
             $endTime = $startTime->copy()->addSeconds($attempt->exam->duration_s);
             $isExpired = now()->greaterThanOrEqualTo($endTime);
 
             if ($attempt->exam->end_time) {
-                $examEndTime = \Carbon\Carbon::parse($attempt->exam->end_time);
+                $examEndTime = Carbon::parse($attempt->exam->end_time);
                 if (now()->greaterThanOrEqualTo($examEndTime)) {
                     $isExpired = true;
                 }

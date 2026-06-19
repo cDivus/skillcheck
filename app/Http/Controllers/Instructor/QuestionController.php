@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use App\Models\Exam;
 use App\Models\Question;
 use App\Models\Option;
+use App\Services\QuestionImporter;
 
 class QuestionController extends Controller
 {
@@ -124,7 +127,7 @@ class QuestionController extends Controller
             $newImageUrl = $validated['image_url'];
             if ($newImageUrl !== $question->image_url) {
                 if ($question->image_url && !filter_var($question->image_url, FILTER_VALIDATE_URL)) {
-                    \Illuminate\Support\Facades\Storage::disk('public')->delete($question->image_url);
+                    Storage::disk('public')->delete($question->image_url);
                 }
                 $imagePath = !empty($newImageUrl) ? trim($newImageUrl) : null;
             }
@@ -132,14 +135,14 @@ class QuestionController extends Controller
 
         if ($request->has('remove_image')) {
             if ($question->image_url && !filter_var($question->image_url, FILTER_VALIDATE_URL)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($question->image_url);
+                Storage::disk('public')->delete($question->image_url);
             }
             $imagePath = null;
         }
 
         if ($request->hasFile('image')) {
             if ($question->image_url && !filter_var($question->image_url, FILTER_VALIDATE_URL)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($question->image_url);
+                Storage::disk('public')->delete($question->image_url);
             }
             $imagePath = $request->file('image')->store('questions', 'public');
         }
@@ -258,7 +261,7 @@ class QuestionController extends Controller
     /**
      * Import questions from a JSON file.
      */
-    public function import(Request $request, $examId, \App\Services\QuestionImporter $importer)
+    public function import(Request $request, $examId, QuestionImporter $importer)
     {
         $exam = Exam::where('instructor_id', Auth::id())
             ->findOrFail($examId);
@@ -322,7 +325,7 @@ class QuestionController extends Controller
         }
 
         $jsonString = json_encode($exportData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $fileName = 'exam_' . \Illuminate\Support\Str::slug($exam->title) . '_questions.json';
+        $fileName = 'exam_' . Str::slug($exam->title) . '_questions.json';
 
         return response($jsonString, 200, [
             'Content-Type' => 'application/json',
