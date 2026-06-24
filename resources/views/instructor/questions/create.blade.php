@@ -1,120 +1,100 @@
 @extends('layouts.app')
 
+@section('title', 'Add Question')
+
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-9">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="h3 mb-1">Add Question</h1>
-                <p class="text-muted mb-0">Exam: <strong>{{ $exam->title }}</strong></p>
-            </div>
-            <a href="{{ route('instructor.exams.show', ['exam' => $exam->exam_id]) }}" class="btn btn-outline-secondary">&larr; Back to Exam Details</a>
-        </div>
+    <x-ui.page-header title="Add Question" subtitle="Exam: {{ $exam->title }}">
+        <x-slot:actions>
+            <x-ui.button href="{{ route('instructor.exams.show', ['exam' => $exam->exam_id]) }}" variant="secondary">
+                <x-icon name="arrow-left" /> Back to Exam Details
+            </x-ui.button>
+        </x-slot:actions>
+    </x-ui.page-header>
 
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                @if ($errors->any())
-                    <div class="alert alert-danger mb-4">
-                        <ul class="mb-0 ps-3">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+    <div class="mx-auto max-w-4xl">
+        <x-ui.card>
+            <form action="{{ route('instructor.questions.store', ['exam' => $exam->exam_id]) }}" method="POST" enctype="multipart/form-data" class="space-y-5">
+                @csrf
 
-                <form action="{{ route('instructor.questions.store', ['exam' => $exam->exam_id]) }}" method="POST" enctype="multipart/form-data">
-                    @csrf
+                <x-ui.textarea label="Question Text" name="question_text" rows="4" required placeholder="Type the question content here...">{{ old('question_text') }}</x-ui.textarea>
 
-                    <div class="mb-3">
-                        <label for="question_text" class="form-label fw-bold">Question Text</label>
-                        <textarea id="question_text" name="question_text" class="form-control" rows="4" required placeholder="Type the question content here...">{{ old('question_text') }}</textarea>
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="sm:col-span-2">
+                        <x-ui.select label="Question Type" name="type" id="type" required>
+                            <option value="">-- Select Type --</option>
+                            <option value="multiple_choice" {{ old('type') == 'multiple_choice' ? 'selected' : '' }}>Multiple Choice</option>
+                            <option value="true_false" {{ old('type') == 'true_false' ? 'selected' : '' }}>True / False</option>
+                            <option value="question_answer" {{ old('type') == 'question_answer' ? 'selected' : '' }}>Short Answer (QA)</option>
+                            <option value="essay" {{ old('type') == 'essay' ? 'selected' : '' }}>Essay (Manual Grade)</option>
+                        </x-ui.select>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="type" class="form-label fw-bold">Question Type</label>
-                            <select id="type" name="type" class="form-select" required>
-                                <option value="">-- Select Type --</option>
-                                <option value="multiple_choice" {{ old('type') == 'multiple_choice' ? 'selected' : '' }}>Multiple Choice</option>
-                                <option value="true_false" {{ old('type') == 'true_false' ? 'selected' : '' }}>True / False</option>
-                                <option value="question_answer" {{ old('type') == 'question_answer' ? 'selected' : '' }}>Short Answer (QA)</option>
-                                <option value="essay" {{ old('type') == 'essay' ? 'selected' : '' }}>Essay (Manual Grade)</option>
-                            </select>
-                        </div>
+                    <x-ui.input type="number" label="Marks" name="marks" id="marks" step="0.01" :value="old('marks', 1.00)" required min="0" />
 
-                        <div class="col-md-3 mb-3">
-                            <label for="marks" class="form-label fw-bold">Marks</label>
-                            <input type="number" id="marks" name="marks" class="form-control" step="0.01" value="{{ old('marks', 1.00) }}" required min="0">
-                        </div>
+                    <x-ui.input type="number" label="Time Limit (Sec)" name="time_limit_s" id="time_limit_s" :value="old('time_limit_s')" min="1" placeholder="Optional" />
+                </div>
 
-                        <div class="col-md-3 mb-3">
-                            <label for="time_limit_s" class="form-label fw-bold">Time Limit (Sec)</label>
-                            <input type="number" id="time_limit_s" name="time_limit_s" class="form-control" value="{{ old('time_limit_s') }}" min="1" placeholder="Optional">
+                <div>
+                    <label class="block text-sm font-medium text-ink mb-1.5">Question Image (Optional)</label>
+                    <div class="rounded-xl bg-subtle/60 p-4">
+                        <div class="mb-3">
+                            <label for="image" class="block text-xs font-semibold text-muted mb-1.5">Upload Local Image</label>
+                            <input type="file" id="image" name="image" accept="image/*"
+                                class="w-full rounded-lg border border-line-strong bg-white px-3 py-2 text-sm text-ink shadow-xs outline-none file:mr-3 file:rounded-md file:border-0 file:bg-subtle file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ink focus:ring-2 focus:ring-brand-500/25">
+                        </div>
+                        <div class="my-2 text-center text-xs font-bold text-muted">— OR —</div>
+                        <div>
+                            <label for="image_url" class="block text-xs font-semibold text-muted mb-1.5">Image URL (Web Link)</label>
+                            <input type="url" id="image_url" name="image_url" value="{{ old('image_url') }}" placeholder="https://example.com/image.jpg"
+                                class="w-full rounded-lg border border-line-strong bg-white px-3 py-2 text-sm text-ink placeholder:text-faint shadow-xs outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/25">
                         </div>
                     </div>
+                </div>
 
-                    <div class="mb-4">
-                        <label for="image" class="form-label fw-bold">Question Image (Optional)</label>
-                        <div class="card p-3 bg-light border-0">
-                            <div class="mb-3">
-                                <label for="image" class="form-label small fw-semibold text-secondary">Upload Local Image</label>
-                                <input type="file" id="image" name="image" class="form-control" accept="image/*">
-                            </div>
-                            <div class="text-center my-2 text-muted fw-bold small">— OR —</div>
-                            <div>
-                                <label for="image_url" class="form-label small fw-semibold text-secondary">Image URL (Web Link)</label>
-                                <input type="url" id="image_url" name="image_url" class="form-control" placeholder="https://example.com/image.jpg" value="{{ old('image_url') }}">
-                            </div>
-                        </div>
+                <label class="flex items-start gap-3 rounded-lg border border-line bg-subtle/50 p-3 cursor-pointer">
+                    <input class="mt-0.5 h-4 w-4 rounded border-line-strong text-brand-700 focus:ring-brand-500/25" type="checkbox" id="is_locked" name="is_locked" value="1" {{ old('is_locked') ? 'checked' : '' }}>
+                    <span>
+                        <span class="block text-sm font-medium text-ink">Lock Question Position</span>
+                        <span class="block text-xs text-muted">If checked, this question will always remain at its current index position, even when question randomization is enabled.</span>
+                    </span>
+                </label>
+
+                <!-- Dynamic Options Section -->
+                <div id="options_section" class="rounded-xl border border-dashed border-line-strong bg-subtle/60 p-4" style="display: none;">
+                    <h5 class="text-sm font-semibold text-ink" id="options_title">Options</h5>
+                    <p class="mt-1 mb-3 text-xs text-muted" id="options_help">Fill in the option text.</p>
+
+                    <div id="options_container" class="mb-3 space-y-2">
+                        <!-- Dynamically populated via JS -->
                     </div>
 
-                    <div class="form-check mb-4">
-                        <input class="form-check-input" type="checkbox" id="is_locked" name="is_locked" value="1" {{ old('is_locked') ? 'checked' : '' }}>
-                        <label class="form-check-label fw-bold" for="is_locked">
-                            Lock Question Position
+                    <x-ui.button type="button" id="add_option_btn" variant="secondary" size="sm">+ Add Option</x-ui.button>
+                </div>
+
+                <!-- True/False Configuration Section -->
+                <div id="true_false_section" class="rounded-xl bg-subtle/60 p-4" style="display: none;">
+                    <h5 class="text-sm font-semibold text-ink">True / False Configuration</h5>
+                    <label class="mt-2 block text-sm font-medium text-ink">Correct Answer:</label>
+                    <div class="mt-2 flex items-center gap-6">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input class="h-4 w-4 border-line-strong text-brand-700 focus:ring-brand-500/25" type="radio" name="tf_correct" id="tf_true" value="True" {{ old('tf_correct', 'True') === 'True' ? 'checked' : '' }}>
+                            <span class="text-sm font-bold text-green-700">True</span>
                         </label>
-                        <div class="form-text text-muted">If checked, this question will always remain at its current index position, even when question randomization is enabled.</div>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input class="h-4 w-4 border-line-strong text-brand-700 focus:ring-brand-500/25" type="radio" name="tf_correct" id="tf_false" value="False" {{ old('tf_correct') === 'False' ? 'checked' : '' }}>
+                            <span class="text-sm font-bold text-red-600">False</span>
+                        </label>
                     </div>
+                </div>
 
-                    <!-- Dynamic Options Section -->
-                    <div id="options_section" class="card bg-light mb-4 border-dashed" style="display: none;">
-                        <div class="card-body">
-                            <h5 class="card-title text-secondary" id="options_title">Options</h5>
-                            <p class="card-text text-muted small mb-3" id="options_help">Fill in the option text.</p>
-                            
-                            <div id="options_container" class="mb-3">
-                                <!-- Dynamically populated via JS -->
-                            </div>
-
-                            <button type="button" id="add_option_btn" class="btn btn-outline-primary btn-sm">+ Add Option</button>
-                        </div>
-                    </div>
-
-                    <!-- True/False Configuration Section -->
-                    <div id="true_false_section" class="card bg-light mb-4" style="display: none;">
-                        <div class="card-body">
-                            <h5 class="card-title text-secondary">True / False Configuration</h5>
-                            <label class="form-label fw-bold d-block">Correct Answer:</label>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="tf_correct" id="tf_true" value="True" {{ old('tf_correct', 'True') === 'True' ? 'checked' : '' }}>
-                                <label class="form-check-label text-success fw-bold" for="tf_true">True</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="tf_correct" id="tf_false" value="False" {{ old('tf_correct') === 'False' ? 'checked' : '' }}>
-                                <label class="form-check-label text-danger fw-bold" for="tf_false">False</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">Save Question</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <div class="flex justify-end pt-2">
+                    <x-ui.button type="submit" variant="primary" size="lg">
+                        <x-icon name="check" /> Save Question
+                    </x-ui.button>
+                </div>
+            </form>
+        </x-ui.card>
     </div>
-</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -131,20 +111,20 @@
 
         function addOptionRow(val = '') {
             const row = document.createElement('div');
-            row.className = 'option-row row g-3 mb-2 align-items-center';
+            row.className = 'option-row flex flex-col gap-2 sm:flex-row sm:items-center';
             row.innerHTML = `
-                <div class="col-sm-8 col-md-9">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white text-secondary">Option</span>
-                        <input type="text" name="options[${optionIndex}]" class="form-control" value="${val}" required placeholder="Type option text...">
+                <div class="flex-1">
+                    <div class="flex items-stretch overflow-hidden rounded-lg border border-line-strong bg-white shadow-xs focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/25">
+                        <span class="flex items-center bg-subtle px-3 text-xs font-medium text-muted">Option</span>
+                        <input type="text" name="options[${optionIndex}]" class="flex-1 border-0 bg-white px-3 py-2 text-sm text-ink placeholder:text-faint outline-none focus:ring-0" value="${val}" required placeholder="Type option text...">
                     </div>
                 </div>
-                <div class="col-sm-4 col-md-3 d-flex align-items-center gap-2">
-                    <div class="correct-checkbox-wrapper form-check mb-0">
-                        <input type="checkbox" name="correct_options[]" class="form-check-input" value="${optionIndex}" id="chk-${optionIndex}">
-                        <label class="form-check-label fw-bold text-success small" for="chk-${optionIndex}">Correct</label>
-                    </div>
-                    <button type="button" class="btn btn-outline-danger btn-sm remove-option-btn py-0 px-2" style="font-size: 0.8rem;">Remove</button>
+                <div class="flex items-center gap-3 sm:shrink-0">
+                    <label class="correct-checkbox-wrapper flex items-center gap-1.5 cursor-pointer">
+                        <input type="checkbox" name="correct_options[]" class="h-4 w-4 rounded border-line-strong text-brand-700 focus:ring-brand-500/25" value="${optionIndex}" id="chk-${optionIndex}">
+                        <span class="text-xs font-bold text-green-700">Correct</span>
+                    </label>
+                    <button type="button" class="remove-option-btn rounded-md border border-red-200 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50">Remove</button>
                 </div>
             `;
             optionsContainer.appendChild(row);
@@ -165,7 +145,7 @@
 
         function toggleOptionsSection() {
             const selectedType = typeSelect.value;
-            
+
             if (selectedType === 'multiple_choice' || selectedType === 'question_answer') {
                 optionsSection.style.display = 'block';
                 tfSection.style.display = 'none';

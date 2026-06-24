@@ -1,80 +1,55 @@
 @extends('layouts.app')
 
+@section('title', 'Create Exam')
+
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h2 mb-0">Create New Exam</h1>
-            <a href="{{ route('instructor.exams.index') }}" class="btn btn-outline-secondary">&larr; Back to Exams List</a>
-        </div>
+    <x-ui.page-header title="Create New Exam" subtitle="Set up a new exam for your students">
+        <x-slot:actions>
+            <x-ui.button href="{{ route('instructor.exams.index') }}" variant="secondary">
+                <x-icon name="arrow-left" /> Back to Exams List
+            </x-ui.button>
+        </x-slot:actions>
+    </x-ui.page-header>
 
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0 ps-3">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+    <div class="mx-auto max-w-3xl">
+        <x-ui.card>
+            <form action="{{ route('instructor.exams.store') }}" method="POST" class="space-y-5">
+                @csrf
 
-                <form action="{{ route('instructor.exams.store') }}" method="POST">
-                    @csrf
+                <x-ui.input label="Exam Title" name="title" :value="old('title')" required placeholder="e.g. Midterm Exam" />
 
-                    <div class="mb-3">
-                        <label for="title" class="form-label fw-bold">Exam Title</label>
-                        <input type="text" id="title" name="title" class="form-control" value="{{ old('title') }}" required placeholder="e.g. Midterm Exam">
-                    </div>
+                <x-ui.textarea label="Description (Optional)" name="description" rows="4" placeholder="Enter instructions or description...">{{ old('description') }}</x-ui.textarea>
 
-                    <div class="mb-3">
-                        <label for="description" class="form-label fw-bold">Description (Optional)</label>
-                        <textarea id="description" name="description" class="form-control" rows="4" placeholder="Enter instructions or description...">{{ old('description') }}</textarea>
-                    </div>
+                <x-ui.input type="number" label="Duration (seconds)" name="duration_s" :value="old('duration_s', 3600)" required min="1"
+                    hint="e.g., 3600 for 1 hour, 1800 for 30 minutes." />
 
-                    <div class="mb-3">
-                        <label for="duration_s" class="form-label fw-bold">Duration</label>
-                        <div class="input-group">
-                            <input type="number" id="duration_s" name="duration_s" class="form-control" value="{{ old('duration_s', 3600) }}" required min="1">
-                            <span class="input-group-text">seconds</span>
-                        </div>
-                        <span class="form-text text-muted">e.g., 3600 for 1 hour, 1800 for 30 minutes.</span>
-                    </div>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <x-ui.input type="datetime-local" label="Start Time (Optional)" name="start_time" :value="old('start_time')" />
+                    <x-ui.input type="datetime-local" label="End Time (Optional)" name="end_time" :value="old('end_time')" />
+                </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="start_time" class="form-label fw-bold">Start Time (Optional)</label>
-                            <input type="datetime-local" id="start_time" name="start_time" class="form-control" value="{{ old('start_time') }}">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="end_time" class="form-label fw-bold">End Time (Optional)</label>
-                            <input type="datetime-local" id="end_time" name="end_time" class="form-control" value="{{ old('end_time') }}">
-                        </div>
-                    </div>
+                <label class="flex items-start gap-3 rounded-lg border border-line bg-subtle/50 p-3 cursor-pointer">
+                    <input class="mt-0.5 h-4 w-4 rounded border-line-strong text-brand-700 focus:ring-brand-500/25" type="checkbox" id="randomize_questions" name="randomize_questions" value="1" {{ old('randomize_questions') ? 'checked' : '' }}>
+                    <span>
+                        <span class="block text-sm font-medium text-ink">Randomize Questions</span>
+                        <span class="block text-xs text-muted">If checked, the system will shuffle the order of questions for each student attempt.</span>
+                    </span>
+                </label>
 
-                    <div class="form-check mb-4">
-                        <input class="form-check-input" type="checkbox" id="randomize_questions" name="randomize_questions" value="1" {{ old('randomize_questions') ? 'checked' : '' }}>
-                        <label class="form-check-label fw-bold" for="randomize_questions">
-                            Randomize Questions
-                        </label>
-                        <div class="form-text text-muted">If checked, the system will shuffle the order of questions for each student attempt.</div>
-                    </div>
+                <label class="flex items-start gap-3 rounded-lg border border-line bg-subtle/50 p-3 cursor-pointer">
+                    <input class="mt-0.5 h-4 w-4 rounded border-line-strong text-brand-700 focus:ring-brand-500/25" type="checkbox" id="viewable_responses" name="viewable_responses" value="1" {{ old('viewable_responses') ? 'checked' : '' }}>
+                    <span>
+                        <span class="block text-sm font-medium text-ink">Allow Students to View Responses</span>
+                        <span class="block text-xs text-muted">If checked, students will be able to review their answers and scores after completing the exam.</span>
+                    </span>
+                </label>
 
-                    <div class="form-check mb-4">
-                        <input class="form-check-input" type="checkbox" id="viewable_responses" name="viewable_responses" value="1" {{ old('viewable_responses') ? 'checked' : '' }}>
-                        <label class="form-check-label fw-bold" for="viewable_responses">
-                            Allow Students to View Responses
-                        </label>
-                        <div class="form-text text-muted">If checked, students will be able to review their answers and scores after completing the exam.</div>
-                    </div>
-
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">Create Exam</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <div class="flex justify-end pt-2">
+                    <x-ui.button type="submit" variant="primary" size="lg">
+                        <x-icon name="check" /> Create Exam
+                    </x-ui.button>
+                </div>
+            </form>
+        </x-ui.card>
     </div>
-</div>
 @endsection
