@@ -1,50 +1,31 @@
-@extends('layouts.app')
+@extends('layouts.guest')
+
+@section('title', 'Forgot Password')
 
 @section('content')
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white py-3">
-                <h4 class="mb-0 text-center">Forgot Password</h4>
-            </div>
-            <div class="card-body p-4">
-                @if (session('status'))
-                    <div class="alert alert-success" role="alert">
-                        {{ session('status') }}
-                    </div>
-                @endif
-
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0 ps-3">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                <p class="text-muted mb-4">
-                    Enter your email address, and we will send you a link to reset your password.
-                </p>
-
-                <form action="{{ route('password.email') }}" method="POST">
-                    @csrf
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email Address:</label>
-                        <input type="email" name="email" id="email" class="form-control" value="{{ old('email') }}" required autofocus>
-                    </div>
-
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary">Send Password Reset Link</button>
-                    </div>
-                </form>
-
-                <hr class="my-4">
-
-                <p class="text-center mb-0"><a href="{{ route('login') }}" class="text-decoration-none">Back to Login</a></p>
-            </div>
-        </div>
+    <div class="mb-6 text-center">
+        <h1 class="text-xl font-semibold text-ink">Forgot password?</h1>
+        <p class="mt-1 text-sm text-muted">Enter your email and we'll send you a reset link.</p>
     </div>
-</div>
+
+    @if (session('status'))
+        <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('status') }}</div>
+    @endif
+    @if ($errors->any())
+        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <ul class="list-disc space-y-0.5 pl-4">
+                @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ route('password.email') }}" method="POST" class="space-y-4">
+        @csrf
+        <x-ui.input label="Email Address" name="email" type="email" value="{{ old('email') }}" required autofocus />
+        <x-ui.button type="submit" variant="primary" class="w-full">Send Password Reset Link</x-ui.button>
+    </form>
+@endsection
+
+@section('below')
+    <a href="{{ route('login') }}" class="font-medium text-brand-700 hover:text-brand-800">Back to login</a>
 @endsection
