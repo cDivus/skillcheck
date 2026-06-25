@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/profile/edit', [AuthController::class, 'editProfile'])->name('profile.edit');
+    Route::get('/profile', fn () => redirect()->route('profile.edit'));
     Route::put('/profile', [AuthController::class, 'updateProfile'])->name('profile.update');
 
     // Module 2 & 4: Exam Management & Grading (Instructor Portal - Requires Instructor Middleware)

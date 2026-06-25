@@ -1,173 +1,170 @@
 @extends('layouts.app')
 
+@section('title', 'Review Attempt')
+
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <a href="{{ route('student.exams.index') }}" class="btn btn-outline-secondary btn-sm">&larr; Back to Dashboard</a>
-            </div>
-            <div>
-                <span class="badge bg-{{ $attempt->status === 'graded' ? 'success' : 'info' }} fs-6">
-                    Status: <strong>{{ ucfirst($attempt->status) }}</strong>
-                </span>
-            </div>
-        </div>
+<x-ui.page-header
+    :title="'Exam Review: ' . $exam->title"
+    subtitle="Review your responses and results">
+    <x-slot:actions>
+        <x-ui.badge :color="$attempt->status === 'graded' ? 'green' : 'blue'">
+            Status: {{ ucfirst($attempt->status) }}
+        </x-ui.badge>
+        <x-ui.button variant="secondary" :href="route('student.exams.index')">
+            <x-icon name="arrow-left" /> Back to Dashboard
+        </x-ui.button>
+    </x-slot:actions>
+</x-ui.page-header>
 
-        <!-- Attempt Details Card -->
-        <div class="card mb-4 shadow-sm border-primary">
-            <div class="card-header bg-primary text-white py-3">
-                <h4 class="mb-0">Exam Review: {{ $exam->title }}</h4>
+<div class="mx-auto max-w-4xl">
+    {{-- Attempt Details Card --}}
+    <x-ui.card class="mb-6">
+        <div class="grid items-center gap-6 sm:grid-cols-12">
+            <div class="space-y-2 sm:col-span-7">
+                <p class="flex items-center gap-2 text-sm text-ink">
+                    <strong class="font-medium">Instructor:</strong>
+                    <x-ui.avatar :user="$exam->instructor" size="xs" />
+                    <span>{{ $exam->instructor->username ?? 'N/A' }}</span>
+                </p>
+                <p class="text-sm text-ink"><strong class="font-medium">Started At:</strong> {{ $attempt->start_time ? $attempt->start_time->format('Y-m-d H:i:s') : 'N/A' }}</p>
+                <p class="text-sm text-ink"><strong class="font-medium">Submitted At:</strong> {{ $attempt->end_time ? $attempt->end_time->format('Y-m-d H:i:s') : 'N/A' }}</p>
             </div>
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-7">
-                        <p class="mb-2 d-flex align-items-center">
-                            <strong>Instructor:</strong>
-                            @if($exam->instructor && $exam->instructor->profile_picture)
-                                <img src="{{ asset('storage/' . $exam->instructor->profile_picture) }}" alt="Instructor Profile" class="rounded-circle ms-2 me-1 shadow-sm" style="width: 28px; height: 28px; object-fit: cover; border: 1.5px solid #0d6efd;">
-                            @elseif($exam->instructor)
-                                <span class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center ms-2 me-1 fw-bold shadow-sm" style="width: 28px; height: 28px; font-size: 0.75rem; border: 1.5px solid #6c757d;">
-                                    {{ strtoupper(substr($exam->instructor->username, 0, 1)) }}
-                                </span>
-                            @else
-                                <span class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center ms-2 me-1 fw-bold shadow-sm" style="width: 28px; height: 28px; font-size: 0.75rem; border: 1.5px solid #6c757d;">I</span>
-                            @endif
-                            <span class="ms-1">{{ $exam->instructor->username ?? 'N/A' }}</span>
-                        </p>
-                        <p class="mb-2"><strong>Started At:</strong> {{ $attempt->start_time ? $attempt->start_time->format('Y-m-d H:i:s') : 'N/A' }}</p>
-                        <p class="mb-0"><strong>Submitted At:</strong> {{ $attempt->end_time ? $attempt->end_time->format('Y-m-d H:i:s') : 'N/A' }}</p>
-                    </div>
-                    <div class="col-md-5 text-md-end mt-3 mt-md-0">
-                        <div class="p-3 bg-light rounded border d-inline-block text-center min-w-150">
-                            <span class="text-muted d-block small fw-bold text-uppercase">Your Score</span>
-                            @if ($attempt->status === 'graded')
-                                <span class="fs-2 fw-bold text-success">{{ number_format($attempt->total_score, 1) }}</span>
-                                <span class="text-muted">/ {{ number_format($attempt->max_score, 1) }}</span>
-                            @else
-                                <span class="fs-4 fw-bold text-info">Pending Grading</span>
-                                <span class="text-muted d-block small mt-1">Some questions need manual grading</span>
-                            @endif
-                        </div>
-                    </div>
+            <div class="sm:col-span-5 sm:text-right">
+                <div class="inline-block min-w-37.5 rounded-xl border border-brand-200 bg-brand-50 p-4 text-center">
+                    <span class="block text-xs font-bold uppercase tracking-wide text-muted">Your Score</span>
+                    @if ($attempt->status === 'graded')
+                        <span class="text-3xl font-bold text-green-600">{{ number_format($attempt->total_score, 1) }}</span>
+                        <span class="text-muted">/ {{ number_format($attempt->max_score, 1) }}</span>
+                    @else
+                        <span class="text-xl font-bold text-blue-600">Pending Grading</span>
+                        <span class="mt-1 block text-xs text-muted">Some questions need manual grading</span>
+                    @endif
                 </div>
             </div>
         </div>
+    </x-ui.card>
 
-        <h3 class="h4 mb-3">Questions & Your Responses</h3>
+    <div class="mb-4 flex items-center gap-2">
+        <x-icon name="clipboard-check" class="h-5 w-5 text-brand-700" />
+        <h2 class="text-base font-semibold text-ink">Questions &amp; Your Responses</h2>
+    </div>
 
-        @foreach ($questions as $index => $question)
-            @php
-                $answer = $answers->get($question->question_id);
-            @endphp
-            <div class="card mb-4 shadow-sm border-{{ !$answer ? 'danger' : ($question->type === 'essay' && is_null($answer->marks_awarded) ? 'warning' : 'light') }}">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Question {{ $index + 1 }} <small class="text-muted">({{ str_replace('_', ' ', $question->type) }})</small></h5>
-                    <div>
-                        @if ($answer && !is_null($answer->marks_awarded))
-                            <span class="badge bg-{{ $answer->marks_awarded > 0 ? 'success' : 'danger' }} text-white">
-                                Marks: {{ number_format($answer->marks_awarded, 1) }} / {{ number_format($question->marks, 1) }}
-                            </span>
-                        @else
-                            <span class="badge bg-warning text-dark">
-                                Marks: — / {{ number_format($question->marks, 1) }}
-                            </span>
+    @foreach ($questions as $index => $question)
+        @php
+            $answer = $answers->get($question->question_id);
+            $cardBorder = !$answer
+                ? 'border-red-200'
+                : ($question->type === 'essay' && is_null($answer->marks_awarded) ? 'border-amber-200' : 'border-line');
+        @endphp
+        <x-ui.card padding="p-0" class="mb-6 overflow-hidden border {{ $cardBorder }}">
+            <div class="flex items-center justify-between gap-2 border-b border-line bg-subtle/60 px-5 py-3">
+                <h3 class="text-sm font-semibold text-ink">
+                    Question {{ $index + 1 }}
+                    <span class="font-normal text-muted">({{ str_replace('_', ' ', $question->type) }})</span>
+                </h3>
+                <div>
+                    @if ($answer && !is_null($answer->marks_awarded))
+                        <x-ui.badge :color="$answer->marks_awarded > 0 ? 'green' : 'red'">
+                            Marks: {{ number_format($answer->marks_awarded, 1) }} / {{ number_format($question->marks, 1) }}
+                        </x-ui.badge>
+                    @else
+                        <x-ui.badge color="amber">
+                            Marks: &mdash; / {{ number_format($question->marks, 1) }}
+                        </x-ui.badge>
+                    @endif
+                </div>
+            </div>
+
+            <div class="p-5 sm:p-6">
+                {{-- Question Text --}}
+                <p class="text-base text-ink">{!! nl2br(e($question->question_text)) !!}</p>
+
+                @if ($question->image_url)
+                    <div class="mt-4">
+                        <img src="{{ asset('storage/' . $question->image_url) }}" alt="Question Diagram" class="max-h-50 rounded-lg border border-line">
+                    </div>
+                @endif
+
+                <hr class="my-5 border-line">
+
+                {{-- Student response display --}}
+                <div>
+                    <strong class="mb-3 block text-sm font-medium text-ink">Options / Responses:</strong>
+
+                    @if ($question->type === 'multiple_choice' || $question->type === 'true_false')
+                        <div class="space-y-2">
+                            @foreach ($question->options as $option)
+                                @php
+                                    $isSelected = $answer && $answer->selected_option === $option->option_id;
+                                    $isCorrect = $option->is_correct;
+
+                                    $bgClass = 'border-line';
+                                    $badge = '';
+
+                                    if ($isSelected) {
+                                        if ($isCorrect) {
+                                            $bgClass = 'border-green-200 bg-green-50';
+                                            $badge = '<span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-200">Your Answer &amp; Correct</span>';
+                                        } else {
+                                            $bgClass = 'border-red-200 bg-red-50';
+                                            $badge = '<span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-200">Your Answer</span>';
+                                        }
+                                    } elseif ($isCorrect) {
+                                        $bgClass = 'border-green-200 bg-green-50/50';
+                                        $badge = '<span class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-200">Correct Answer</span>';
+                                    }
+                                @endphp
+                                <div class="flex items-center justify-between gap-3 rounded-lg border px-4 py-3 {{ $bgClass }}">
+                                    <span class="text-sm text-ink">{{ $option->option_text }}</span>
+                                    <div>{!! $badge !!}</div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                    @elseif ($question->type === 'question_answer')
+                        <div class="mb-2 rounded-xl border border-brand-200 bg-brand-50 p-4">
+                            <strong class="text-sm font-medium text-ink">Your Answer:</strong>
+                            @if ($answer && $answer->text_answer)
+                                <span class="ml-1 font-mono text-sm text-brand-700">{{ $answer->text_answer }}</span>
+                            @else
+                                <span class="ml-1 text-sm italic text-red-600">No answer provided.</span>
+                            @endif
+                        </div>
+                        <div class="mt-2 text-sm text-muted">
+                            <strong class="font-medium">Acceptable Correct Answers:</strong>
+                            <ul class="mt-1 list-disc space-y-0.5 pl-5">
+                                @foreach ($question->options->where('is_correct', true) as $opt)
+                                    <li><span class="font-mono">{{ $opt->option_text }}</span></li>
+                                @endforeach
+                            </ul>
+                        </div>
+
+                    @elseif ($question->type === 'essay')
+                        <div class="rounded-xl border border-brand-200 bg-brand-50 p-4">
+                            <strong class="text-sm font-medium text-ink">Your Answer:</strong>
+                            <p class="mt-2 text-sm text-ink">{!! nl2br(e($answer->text_answer ?? 'No answer provided.')) !!}</p>
+                        </div>
+                        @if ($answer && is_null($answer->marks_awarded))
+                            <div class="mt-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                                <x-icon name="clock" class="h-4 w-4" /> This essay response is currently awaiting grading by your instructor.
+                            </div>
                         @endif
-                    </div>
-                </div>
-                <div class="card-body">
-                    <!-- Question Text -->
-                    <p class="fs-5">{!! nl2br(e($question->question_text)) !!}</p>
-                    
-                    @if ($question->image_url)
-                        <div class="mb-3">
-                            <img src="{{ asset('storage/' . $question->image_url) }}" alt="Question Diagram" class="img-thumbnail" style="max-height: 200px;">
-                        </div>
                     @endif
 
-                    <hr>
-
-                    <!-- Student response display -->
-                    <div class="mb-3">
-                        <strong class="d-block mb-2 text-secondary">Options / Responses:</strong>
-                        
-                        @if ($question->type === 'multiple_choice' || $question->type === 'true_false')
-                            <div class="list-group">
-                                @foreach ($question->options as $option)
-                                    @php
-                                        $isSelected = $answer && $answer->selected_option === $option->option_id;
-                                        $isCorrect = $option->is_correct;
-                                        
-                                        $bgClass = '';
-                                        $badge = '';
-                                        
-                                        if ($isSelected) {
-                                            if ($isCorrect) {
-                                                $bgClass = 'list-group-item-success';
-                                                $badge = '<span class="badge bg-success ms-2"><i class="bi bi-check-circle-fill"></i> Your Answer & Correct</span>';
-                                            } else {
-                                                $bgClass = 'list-group-item-danger';
-                                                $badge = '<span class="badge bg-danger ms-2"><i class="bi bi-x-circle-fill"></i> Your Answer</span>';
-                                            }
-                                        } elseif ($isCorrect) {
-                                            $bgClass = 'list-group-item-success bg-opacity-50';
-                                            $badge = '<span class="badge bg-success bg-opacity-75 ms-2">Correct Answer</span>';
-                                        }
-                                    @endphp
-                                    <div class="list-group-item d-flex justify-content-between align-items-center {{ $bgClass }}">
-                                        <div>
-                                            {{ $option->option_text }}
-                                        </div>
-                                        <div>
-                                            {!! $badge !!}
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                            
-                        @elseif ($question->type === 'question_answer')
-                            <div class="p-3 bg-light rounded border mb-2">
-                                <strong>Your Answer:</strong> 
-                                @if ($answer && $answer->text_answer)
-                                    <span class="font-monospace text-primary ms-1">{{ $answer->text_answer }}</span>
-                                @else
-                                    <span class="text-danger italic ms-1">No answer provided.</span>
-                                @endif
-                            </div>
-                            <div class="mt-2 text-muted small">
-                                <strong>Acceptable Correct Answers:</strong>
-                                <ul class="mb-0 ps-3 mt-1">
-                                    @foreach ($question->options->where('is_correct', true) as $opt)
-                                        <li><span class="font-monospace">{{ $opt->option_text }}</span></li>
-                                    @endforeach
-                                </ul>
-                            </div>
-
-                        @elseif ($question->type === 'essay')
-                            <div class="p-3 bg-light rounded border">
-                                <strong>Your Answer:</strong>
-                                <p class="mt-2 mb-0">{!! nl2br(e($answer->text_answer ?? 'No answer provided.')) !!}</p>
-                            </div>
-                            @if ($answer && is_null($answer->marks_awarded))
-                                <div class="alert alert-warning mt-3 mb-0 py-2 small">
-                                    <i class="bi bi-hourglass-split"></i> This essay response is currently awaiting grading by your instructor.
-                                </div>
-                            @endif
-                        @endif
-
-                        @if (!$answer)
-                            <div class="alert alert-danger mt-2 py-2 small">
-                                <i class="bi bi-exclamation-triangle-fill"></i> No answer was submitted for this question.
-                            </div>
-                        @endif
-                    </div>
+                    @if (!$answer)
+                        <div class="mt-2 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                            <x-icon name="alert-triangle" class="h-4 w-4" /> No answer was submitted for this question.
+                        </div>
+                    @endif
                 </div>
             </div>
-        @endforeach
+        </x-ui.card>
+    @endforeach
 
-        <div class="text-center mt-4 mb-5">
-            <a href="{{ route('student.exams.index') }}" class="btn btn-primary px-4">Back to Dashboard</a>
-        </div>
+    <div class="mb-8 mt-6 text-center">
+        <x-ui.button variant="primary" :href="route('student.exams.index')">
+            <x-icon name="arrow-left" /> Back to Dashboard
+        </x-ui.button>
     </div>
 </div>
 @endsection

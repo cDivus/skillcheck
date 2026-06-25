@@ -27,8 +27,10 @@ return new class extends Migration
             $table->unique(['attempt_id', 'question_id']);
         });
 
-        // Add check constraints
-        DB::statement('ALTER TABLE Student_Answers ADD CONSTRAINT chk_marks_awarded CHECK (marks_awarded >= 0)');
+        // Add check constraints (SQLite cannot ALTER TABLE ADD CONSTRAINT; skip there)
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE Student_Answers ADD CONSTRAINT chk_marks_awarded CHECK (marks_awarded >= 0)');
+        }
     }
 
     /**
