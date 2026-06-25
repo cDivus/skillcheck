@@ -54,7 +54,8 @@ class ExamController extends Controller
             'description' => 'nullable|string',
             'start_time' => 'nullable|date',
             'end_time' => 'nullable|date|after:start_time',
-            'duration_s' => 'required|integer|min:1',
+            'timer_type' => 'required|string|in:whole_exam,per_question',
+            'duration_s' => 'required_if:timer_type,whole_exam|nullable|integer|min:1',
             'randomize_questions' => 'nullable|boolean',
             'viewable_responses' => 'nullable|boolean',
         ]);
@@ -65,7 +66,8 @@ class ExamController extends Controller
             'description' => $validated['description'] ?? null,
             'start_time' => $validated['start_time'] ?? null,
             'end_time' => $validated['end_time'] ?? null,
-            'duration_s' => $validated['duration_s'],
+            'timer_type' => $validated['timer_type'],
+            'duration_s' => $validated['timer_type'] === 'whole_exam' ? $validated['duration_s'] : null,
             'randomize_questions' => $request->boolean('randomize_questions'),
             'viewable_responses' => $request->boolean('viewable_responses'),
         ]);
@@ -101,7 +103,8 @@ class ExamController extends Controller
             'description' => 'nullable|string',
             'start_time' => 'nullable|date',
             'end_time' => 'nullable|date|after:start_time',
-            'duration_s' => 'required|integer|min:1',
+            'timer_type' => 'required|string|in:whole_exam,per_question',
+            'duration_s' => 'required_if:timer_type,whole_exam|nullable|integer|min:1',
             'randomize_questions' => 'nullable|boolean',
             'viewable_responses' => 'nullable|boolean',
         ]);
@@ -111,7 +114,8 @@ class ExamController extends Controller
             'description' => $validated['description'] ?? null,
             'start_time' => $validated['start_time'] ?? null,
             'end_time' => $validated['end_time'] ?? null,
-            'duration_s' => $validated['duration_s'],
+            'timer_type' => $validated['timer_type'],
+            'duration_s' => $validated['timer_type'] === 'whole_exam' ? $validated['duration_s'] : null,
             'randomize_questions' => $request->boolean('randomize_questions'),
             'viewable_responses' => $request->boolean('viewable_responses'),
         ]);

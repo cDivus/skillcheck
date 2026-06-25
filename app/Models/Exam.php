@@ -24,6 +24,7 @@ class Exam extends Model
         'start_time',
         'end_time',
         'duration_s',
+        'timer_type',
         'randomize_questions',
         'viewable_responses',
     ];

@@ -37,7 +37,7 @@ class QuestionController extends Controller
         $validated = $request->validate([
             'question_text' => 'required|string',
             'type' => 'required|string|in:multiple_choice,true_false,question_answer,essay',
-            'time_limit_s' => 'nullable|integer|min:1',
+            'time_limit_s' => ($exam->timer_type === 'per_question' ? 'required' : 'nullable') . '|integer|min:1',
             'image' => 'nullable|image|max:2048',
             'image_url' => 'nullable|string|max:2048',
             'marks' => 'required|numeric|min:0',
@@ -105,7 +105,7 @@ class QuestionController extends Controller
         $validated = $request->validate([
             'question_text' => 'required|string',
             'type' => 'required|string|in:multiple_choice,true_false,question_answer,essay',
-            'time_limit_s' => 'nullable|integer|min:1',
+            'time_limit_s' => ($exam->timer_type === 'per_question' ? 'required' : 'nullable') . '|integer|min:1',
             'image' => 'nullable|image|max:2048',
             'image_url' => 'nullable|string|max:2048',
             'remove_image' => 'nullable',

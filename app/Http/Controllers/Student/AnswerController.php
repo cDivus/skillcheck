@@ -59,7 +59,10 @@ class AnswerController extends Controller
                 ->with('success', 'Your exam attempt has been submitted successfully.');
         }
 
-        $nextPage = (int) $request->input('next_page', 1);
+        $currentPage = (int) $request->input('page', 1);
+        $action = $request->input('action', 'next');
+        $nextPage = ($action === 'prev') ? max(1, $currentPage - 1) : ($currentPage + 1);
+
         return redirect()->route('student.exams.attempt.take', [
             'exam' => $examId,
             'attempt' => $attemptId,

@@ -17,8 +17,12 @@
 
         <div class="mt-4 grid gap-4 sm:grid-cols-3 text-sm">
             <div>
-                <span class="text-muted">Duration</span>
-                <p class="text-ink">{{ $exam->duration_s }} seconds ({{ round($exam->duration_s / 60, 2) }} minutes)</p>
+                <span class="text-muted">Timer / Duration</span>
+                @if($exam->timer_type === 'per_question')
+                    <p class="text-ink">Per Question Timer</p>
+                @else
+                    <p class="text-ink">Whole Exam ({{ round($exam->duration_s / 60, 2) }} mins)</p>
+                @endif
             </div>
             <div>
                 <span class="text-muted">Start Time</span>

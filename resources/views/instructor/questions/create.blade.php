@@ -31,7 +31,9 @@
 
                     <x-ui.input type="number" label="Marks" name="marks" id="marks" step="0.01" :value="old('marks', 1.00)" required min="0" />
 
-                    <x-ui.input type="number" label="Time Limit (Sec)" name="time_limit_s" id="time_limit_s" :value="old('time_limit_s')" min="1" placeholder="Optional" />
+                    <x-ui.input type="number" label="Time Limit (Sec)" name="time_limit_s" id="time_limit_s" :value="old('time_limit_s')" min="1"
+                        placeholder="{{ $exam->timer_type === 'per_question' ? 'Required' : 'Optional' }}"
+                        :required="$exam->timer_type === 'per_question'" />
                 </div>
 
                 <div>

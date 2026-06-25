@@ -21,8 +21,24 @@
 
                 <x-ui.textarea label="Description (Optional)" name="description" rows="4" placeholder="Enter instructions or description...">{{ old('description', $exam->description) }}</x-ui.textarea>
 
-                <x-ui.input type="number" label="Duration (seconds)" name="duration_s" :value="old('duration_s', $exam->duration_s)" required min="1"
-                    hint="e.g., 3600 for 1 hour, 1800 for 30 minutes." />
+                <div class="space-y-2">
+                    <span class="block text-sm font-medium text-ink">Timer Type</span>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="timer_type" value="whole_exam" {{ old('timer_type', $exam->timer_type) === 'whole_exam' ? 'checked' : '' }} class="accent-brand-700" onclick="toggleTimerFields()">
+                            <span class="text-sm text-ink">Whole Exam</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="timer_type" value="per_question" {{ old('timer_type', $exam->timer_type) === 'per_question' ? 'checked' : '' }} class="accent-brand-700" onclick="toggleTimerFields()">
+                            <span class="text-sm text-ink">Per Question</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="duration-container">
+                    <x-ui.input type="number" label="Duration (seconds)" name="duration_s" id="duration_s" :value="old('duration_s', $exam->duration_s)" required min="1"
+                        hint="e.g., 3600 for 1 hour, 1800 for 30 minutes." />
+                </div>
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <x-ui.input type="datetime-local" label="Start Time (Optional)" name="start_time" :value="old('start_time', $exam->start_time ? date('Y-m-d\TH:i', strtotime($exam->start_time)) : '')" />
@@ -69,4 +85,22 @@
             </form>
         </x-ui.card>
     </div>
+    <script>
+        function toggleTimerFields() {
+            const timerType = document.querySelector('input[name="timer_type"]:checked').value;
+            const durationContainer = document.getElementById('duration-container');
+            const durationInput = document.getElementById('duration_s');
+
+            if (timerType === 'per_question') {
+                durationContainer.style.display = 'none';
+                durationInput.removeAttribute('required');
+            } else {
+                durationContainer.style.display = 'block';
+                durationInput.setAttribute('required', 'required');
+            }
+        }
+        
+        // Run on initial page load
+        document.addEventListener('DOMContentLoaded', toggleTimerFields);
+    </script>
 @endsection

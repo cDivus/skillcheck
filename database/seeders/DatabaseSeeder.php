@@ -244,6 +244,7 @@ class DatabaseSeeder extends Seeder
         // 4. Populate Exams, Questions, Options, Attempts, and Answers
         foreach ($examBlueprints as $blueprint) {
             $randomInst = $allInstructors->random();
+            $timerType = in_array($blueprint['title'], ['Introduction to Computer Science', 'World History: 20th Century Conflicts']) ? 'whole_exam' : 'per_question';
 
             $exam = Exam::create([
                 'instructor_id' => $randomInst->user_id,
@@ -251,7 +252,8 @@ class DatabaseSeeder extends Seeder
                 'description' => $blueprint['description'],
                 'start_time' => now()->subDays(1),
                 'end_time' => now()->addDays(5),
-                'duration_s' => 3600, // 1 hour
+                'timer_type' => $timerType,
+                'duration_s' => $timerType === 'whole_exam' ? 3600 : null, // 1 hour for whole exam
                 'randomize_questions' => rand(0, 1) === 1,
                 'viewable_responses' => $blueprint['viewable_responses'] ?? true,
             ]);
@@ -265,7 +267,7 @@ class DatabaseSeeder extends Seeder
                     'question_text' => $qData['text'],
                     'image_url' => null,
                     'type' => $qData['type'],
-                    'time_limit_s' => 15, // 15 seconds per question
+                    'time_limit_s' => $timerType === 'per_question' ? 15 : null, // 15 seconds per question
                     'marks' => 10,
                     'is_locked' => false,
                 ]);

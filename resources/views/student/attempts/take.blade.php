@@ -3,12 +3,14 @@
 @section('title', 'Taking Exam')
 
 @section('topbar')
-    <div class="flex items-center gap-2">
-        <span class="flex items-center gap-1.5 text-sm font-medium text-brand-700">
-            <x-icon name="clock" class="h-4 w-4" /> Time Remaining:
-        </span>
-        <span id="timer-display" class="font-mono text-lg font-bold text-red-600">--:--:--</span>
-    </div>
+    @if($timeLeft !== null)
+        <div class="flex items-center gap-2">
+            <span class="flex items-center gap-1.5 text-sm font-medium text-brand-700">
+                <x-icon name="clock" class="h-4 w-4" /> Time Remaining:
+            </span>
+            <span id="timer-display" class="font-mono text-lg font-bold text-red-600">--:--:--</span>
+        </div>
+    @endif
 @endsection
 
 @section('content')
@@ -53,7 +55,7 @@
             <form action="{{ route('student.exams.attempt.answers.store', [$exam->exam_id, $attempt->attempt_id]) }}" method="POST" id="question-form">
                 @csrf
                 <input type="hidden" name="question_id" value="{{ $question->question_id }}">
-                <input type="hidden" name="next_page" value="{{ $page + 1 }}">
+                <input type="hidden" name="page" value="{{ $page }}">
 
                 @if($question->type === 'multiple_choice')
                     <div class="space-y-2">
@@ -93,16 +95,25 @@
 
                 {{-- Navigation Controls for Single Question View --}}
                 <div class="mt-6 flex items-center justify-between border-t border-line pt-4">
+                    <div>
+                        @if($exam->timer_type === 'whole_exam' && $page > 1)
+                            <x-ui.button type="submit" name="action" value="prev" variant="secondary" id="prev-question-btn">
+                                <x-icon name="arrow-left" /> Previous
+                            </x-ui.button>
+                        @endif
+                    </div>
                     <span class="text-sm font-medium text-muted">Question {{ $page }} of {{ $questionsCount }}</span>
-                    @if($page === $questionsCount)
-                        <x-ui.button type="submit" name="action" value="submit" variant="danger" class="next-question-btn">
-                            Submit Exam
-                        </x-ui.button>
-                    @else
-                        <x-ui.button type="submit" name="action" value="next" variant="primary" class="next-question-btn">
-                            Next Question <x-icon name="arrow-right" />
-                        </x-ui.button>
-                    @endif
+                    <div>
+                        @if($page === $questionsCount)
+                            <x-ui.button type="submit" name="action" value="submit" variant="danger" class="next-question-btn">
+                                Submit Exam
+                            </x-ui.button>
+                        @else
+                            <x-ui.button type="submit" name="action" value="next" variant="primary" class="next-question-btn">
+                                Next Question <x-icon name="arrow-right" />
+                            </x-ui.button>
+                        @endif
+                    </div>
                 </div>
             </form>
         </div>
@@ -110,6 +121,7 @@
 </div>
 
 <script>
+    @if($timeLeft !== null)
     // Live countdown timer logic
     let secondsLeft = parseInt("{{ $timeLeft }}");
     const timerDisplay = document.getElementById('timer-display');
@@ -162,6 +174,25 @@
 
     setInterval(updateCountdown, 1000);
     updateCountdown();
+    @else
+    const form = document.getElementById('question-form');
+    let isSubmittingNext = false;
+
+    // Set submit flag on regular form submission
+    form.addEventListener('submit', function() {
+        isSubmittingNext = true;
+    });
+
+    // Auto-submit via beacon when student navigates away or closes tab/window
+    window.addEventListener('pagehide', function (event) {
+        if (!isSubmittingNext) {
+            const url = "{{ route('student.exams.attempt.submit', [$exam->exam_id, $attempt->attempt_id]) }}";
+            const data = new FormData();
+            data.append('_token', "{{ csrf_token() }}");
+            navigator.sendBeacon(url, data);
+        }
+    });
+    @endif
 
     @if($questionTimeLeft !== null)
     // Live countdown timer for the specific question

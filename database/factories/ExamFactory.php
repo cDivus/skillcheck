@@ -18,13 +18,16 @@ class ExamFactory extends Factory
      */
     public function definition(): array
     {
+        $timerType = $this->faker->randomElement(['whole_exam', 'per_question']);
+
         return [
             'instructor_id' => User::where('role', 'instructor')->inRandomOrder()->first()?->user_id ?? User::factory()->create(['role' => 'instructor'])->user_id,
             'title' => $this->faker->sentence(4),
             'description' => $this->faker->paragraph(2),
             'start_time' => now()->addDays(1),
             'end_time' => now()->addDays(2),
-            'duration_s' => $this->faker->randomElement([1800, 3600, 5400]), // 30m, 1h, 1.5h
+            'timer_type' => $timerType,
+            'duration_s' => $timerType === 'whole_exam' ? $this->faker->randomElement([1800, 3600, 5400]) : null, // 30m, 1h, 1.5h
             'randomize_questions' => $this->faker->boolean(),
             'viewable_responses' => $this->faker->boolean(),
         ];

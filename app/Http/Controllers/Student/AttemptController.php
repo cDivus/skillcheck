@@ -81,10 +81,13 @@ class AttemptController extends Controller
         // Calculate time limit / remaining time
         $startTime = Carbon::parse($attempt->start_time);
         $durationSeconds = $attempt->exam->duration_s;
-        $endTime = $startTime->copy()->addSeconds($durationSeconds);
+        $endTime = $durationSeconds ? $startTime->copy()->addSeconds($durationSeconds) : null;
 
         // Check if the current time is past the attempt's end time or past the exam's overall end time
-        $timedOut = now()->greaterThanOrEqualTo($endTime);
+        $timedOut = false;
+        if ($endTime && now()->greaterThanOrEqualTo($endTime)) {
+            $timedOut = true;
+        }
         if ($attempt->exam->end_time) {
             $examEndTime = Carbon::parse($attempt->exam->end_time);
             if (now()->greaterThanOrEqualTo($examEndTime)) {
@@ -99,11 +102,14 @@ class AttemptController extends Controller
         }
 
         // Calculate exact remaining time in seconds
-        $timeLeft = max(0, now()->diffInSeconds($endTime, false));
+        $timeLeft = null;
+        if ($endTime) {
+            $timeLeft = max(0, now()->diffInSeconds($endTime, false));
+        }
         if ($attempt->exam->end_time) {
             $examEndTime = Carbon::parse($attempt->exam->end_time);
             $examTimeLeft = max(0, now()->diffInSeconds($examEndTime, false));
-            $timeLeft = min($timeLeft, $examTimeLeft);
+            $timeLeft = ($timeLeft !== null) ? min($timeLeft, $examTimeLeft) : $examTimeLeft;
         }
         $exam = $attempt->exam;
         $answers = $attempt->answers->keyBy('question_id');
@@ -157,13 +163,15 @@ class AttemptController extends Controller
             }
         }
 
-        // Enforce strict sequential order: cannot skip forward or go back
-        if ($page !== $firstUnansweredPage) {
-            return redirect()->route('student.exams.attempt.take', [
-                'exam' => $examId,
-                'attempt' => $attemptId,
-                'page' => $firstUnansweredPage
-            ]);
+        // Enforce strict sequential order: cannot skip forward or go back (only if timer_type is per_question)
+        if ($exam->timer_type === 'per_question') {
+            if ($page !== $firstUnansweredPage) {
+                return redirect()->route('student.exams.attempt.take', [
+                    'exam' => $examId,
+                    'attempt' => $attemptId,
+                    'page' => $firstUnansweredPage
+                ]);
+            }
         }
 
         // Fetch just the current question
@@ -174,7 +182,7 @@ class AttemptController extends Controller
 
         // Track and calculate question-level time limit
         $questionTimeLeft = null;
-        if ($question->time_limit_s) {
+        if ($exam->timer_type === 'per_question' && $question->time_limit_s) {
             $sessionKey = "exam_attempt_{$attemptId}_question_{$question->question_id}_start";
             if (!session()->has($sessionKey)) {
                 session()->put($sessionKey, now()->timestamp);

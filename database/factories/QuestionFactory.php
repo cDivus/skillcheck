@@ -18,13 +18,16 @@ class QuestionFactory extends Factory
      */
     public function definition(): array
     {
+        $exam = Exam::inRandomOrder()->first() ?? Exam::factory()->create();
+        $isPerQuestion = $exam->timer_type === 'per_question';
+
         return [
-            'exam_id' => Exam::inRandomOrder()->first()?->exam_id ?? Exam::factory()->create()->exam_id,
+            'exam_id' => $exam->exam_id,
             'order_index' => $this->faker->numberBetween(1, 10),
             'question_text' => $this->faker->sentence(10) . '?',
             'image_url' => null,
             'type' => $this->faker->randomElement(['multiple_choice', 'question_answer']),
-            'time_limit_s' => $this->faker->randomElement([60, 120, 180]), // 1m, 2m, 3m
+            'time_limit_s' => $isPerQuestion ? $this->faker->randomElement([60, 120, 180]) : null, // 1m, 2m, 3m
             'marks' => $this->faker->randomElement([5, 10, 15]),
             'is_locked' => false,
         ];

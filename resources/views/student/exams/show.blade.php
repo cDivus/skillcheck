@@ -37,7 +37,11 @@
         <div class="grid gap-x-8 gap-y-3 sm:grid-cols-2">
             <div class="flex items-center justify-between border-b border-line py-2">
                 <span class="flex items-center gap-2 text-sm text-muted"><x-icon name="clock" class="h-4 w-4 text-brand-700" /> Duration</span>
-                <x-ui.badge color="gray">{{ round($exam->duration_s / 60) }} minutes</x-ui.badge>
+                @if($exam->timer_type === 'per_question')
+                    <x-ui.badge color="gray">Per Question</x-ui.badge>
+                @else
+                    <x-ui.badge color="gray">{{ round($exam->duration_s / 60) }} minutes</x-ui.badge>
+                @endif
             </div>
             <div class="flex items-center justify-between border-b border-line py-2">
                 <span class="flex items-center gap-2 text-sm text-muted"><x-icon name="circle-dot" class="h-4 w-4 text-brand-700" /> Total Questions</span>
