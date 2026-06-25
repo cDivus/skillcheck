@@ -253,7 +253,7 @@ class DatabaseSeeder extends Seeder
                 'start_time' => now()->subDays(1),
                 'end_time' => now()->addDays(5),
                 'timer_type' => $timerType,
-                'duration_s' => $timerType === 'whole_exam' ? 3600 : null, // 1 hour for whole exam
+                'duration_m' => $timerType === 'whole_exam' ? 60 : null, // 60 minutes for whole exam
                 'randomize_questions' => rand(0, 1) === 1,
                 'viewable_responses' => $blueprint['viewable_responses'] ?? true,
             ]);

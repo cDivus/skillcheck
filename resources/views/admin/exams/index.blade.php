@@ -61,8 +61,11 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3">
-                                <div class="text-ink">{{ round($exam->duration_s / 60, 1) }} mins</div>
-                                <span class="text-xs text-muted">{{ $exam->duration_s }} seconds</span>
+                                @if($exam->timer_type === 'per_question')
+                                    <x-ui.badge color="gray">Per Question</x-ui.badge>
+                                @else
+                                    <div class="text-ink">{{ $exam->duration_m }} mins</div>
+                                @endif
                             </td>
                             <td class="px-4 py-3">
                                 @if($exam->start_time && $exam->end_time)

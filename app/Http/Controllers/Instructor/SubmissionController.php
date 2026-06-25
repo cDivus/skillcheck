@@ -24,8 +24,9 @@ class SubmissionController extends Controller
         foreach ($allAttempts as $attempt) {
             if ($attempt->status === 'in_progress') {
                 $startTime = Carbon::parse($attempt->start_time);
-                $endTime = $startTime->copy()->addSeconds($exam->duration_s);
-                $isExpired = now()->greaterThanOrEqualTo($endTime);
+                $durationSeconds = $exam->duration_m ? ($exam->duration_m * 60) : null;
+                $endTime = $durationSeconds ? $startTime->copy()->addSeconds($durationSeconds) : null;
+                $isExpired = $endTime ? now()->greaterThanOrEqualTo($endTime) : false;
 
                 if ($exam->end_time) {
                     $examEndTime = Carbon::parse($exam->end_time);
@@ -67,8 +68,9 @@ class SubmissionController extends Controller
         // If it's in progress, check if it's expired to auto-submit on-the-fly
         if ($attempt->status === 'in_progress') {
             $startTime = Carbon::parse($attempt->start_time);
-            $endTime = $startTime->copy()->addSeconds($attempt->exam->duration_s);
-            $isExpired = now()->greaterThanOrEqualTo($endTime);
+            $durationSeconds = $attempt->exam->duration_m ? ($attempt->exam->duration_m * 60) : null;
+            $endTime = $durationSeconds ? $startTime->copy()->addSeconds($durationSeconds) : null;
+            $isExpired = $endTime ? now()->greaterThanOrEqualTo($endTime) : false;
 
             if ($attempt->exam->end_time) {
                 $examEndTime = Carbon::parse($attempt->exam->end_time);

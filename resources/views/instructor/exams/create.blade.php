@@ -35,8 +35,8 @@
                 </div>
 
                 <div id="duration-container">
-                    <x-ui.input type="number" label="Duration (seconds)" name="duration_s" id="duration_s" :value="old('duration_s', 3600)" required min="1"
-                        hint="e.g., 3600 for 1 hour, 1800 for 30 minutes." />
+                    <x-ui.input type="number" label="Duration (minutes)" name="duration_m" id="duration_m" :value="old('duration_m', 60)" required min="1"
+                        hint="e.g., 60 for 1 hour, 30 for 30 minutes." />
                 </div>
 
                 <div class="grid gap-4 sm:grid-cols-2">
@@ -72,7 +72,7 @@
         function toggleTimerFields() {
             const timerType = document.querySelector('input[name="timer_type"]:checked').value;
             const durationContainer = document.getElementById('duration-container');
-            const durationInput = document.getElementById('duration_s');
+            const durationInput = document.getElementById('duration_m');
 
             if (timerType === 'per_question') {
                 durationContainer.style.display = 'none';

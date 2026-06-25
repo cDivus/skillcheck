@@ -27,7 +27,7 @@ class ExamFactory extends Factory
             'start_time' => now()->addDays(1),
             'end_time' => now()->addDays(2),
             'timer_type' => $timerType,
-            'duration_s' => $timerType === 'whole_exam' ? $this->faker->randomElement([1800, 3600, 5400]) : null, // 30m, 1h, 1.5h
+            'duration_m' => $timerType === 'whole_exam' ? $this->faker->randomElement([30, 60, 90]) : null, // 30m, 60m, 90m
             'randomize_questions' => $this->faker->boolean(),
             'viewable_responses' => $this->faker->boolean(),
         ];

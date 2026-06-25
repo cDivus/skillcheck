@@ -30,8 +30,12 @@
 
                     <dl class="mt-4 space-y-2 text-sm">
                         <div class="flex justify-between gap-3">
-                            <dt class="text-muted">Duration</dt>
-                            <dd class="text-right text-ink">{{ $exam->duration_s }} seconds ({{ round($exam->duration_s / 60, 2) }} minutes)</dd>
+                            <dt class="text-muted">Timer / Duration</dt>
+                            @if($exam->timer_type === 'per_question')
+                                <dd class="text-right text-ink">Per Question</dd>
+                            @else
+                                <dd class="text-right text-ink">{{ $exam->duration_m }} minutes</dd>
+                            @endif
                         </div>
                         <div class="flex justify-between gap-3">
                             <dt class="text-muted">Start Time</dt>

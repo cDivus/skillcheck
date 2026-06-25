@@ -30,7 +30,12 @@
             <div class="grid gap-4 p-5 text-sm sm:grid-cols-2">
                 <div>
                     <p><span class="text-muted">Exam:</span> <span class="text-ink">{{ $attempt->exam->title }}</span></p>
-                    <p><span class="text-muted">Duration:</span> <span class="text-ink">{{ round($attempt->exam->duration_s / 60) }} minutes</span></p>
+                    <p>
+                        <span class="text-muted">Duration:</span> 
+                        <span class="text-ink">
+                            {{ $attempt->exam->timer_type === 'per_question' ? 'Per Question' : $attempt->exam->duration_m . ' minutes' }}
+                        </span>
+                    </p>
                 </div>
                 <div class="sm:text-right">
                     <p><span class="text-muted">Started At:</span> <span class="text-ink">{{ $attempt->started_at ? $attempt->started_at->format('Y-m-d H:i:s') : 'N/A' }}</span></p>

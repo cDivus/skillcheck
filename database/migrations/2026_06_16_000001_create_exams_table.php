@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->dateTime('start_time')->nullable();
             $table->dateTime('end_time')->nullable();
-            $table->integer('duration_s');
+            $table->integer('duration_m')->nullable();
             $table->timestamp('created_at')->useCurrent();
 
             $table->foreign('instructor_id')->references('user_id')->on('Users')->onDelete('cascade');
@@ -28,7 +28,7 @@ return new class extends Migration
         // Add check constraints (SQLite cannot ALTER TABLE ADD CONSTRAINT; skip there)
         if (DB::getDriverName() !== 'sqlite') {
             DB::statement('ALTER TABLE Exams ADD CONSTRAINT chk_exam_times CHECK (end_time > start_time)');
-            DB::statement('ALTER TABLE Exams ADD CONSTRAINT chk_duration CHECK (duration_s > 0)');
+            DB::statement('ALTER TABLE Exams ADD CONSTRAINT chk_duration CHECK (duration_m > 0)');
         }
     }
 

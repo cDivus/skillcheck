@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::table('Exams', function (Blueprint $table) {
             $table->string('timer_type', 50)->default('whole_exam')->after('end_time');
-            $table->integer('duration_s')->nullable()->change();
         });
     }
 
@@ -24,7 +23,6 @@ return new class extends Migration
     {
         Schema::table('Exams', function (Blueprint $table) {
             $table->dropColumn('timer_type');
-            $table->integer('duration_s')->nullable(false)->change();
         });
     }
 };

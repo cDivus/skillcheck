@@ -80,7 +80,7 @@ class AttemptController extends Controller
 
         // Calculate time limit / remaining time
         $startTime = Carbon::parse($attempt->start_time);
-        $durationSeconds = $attempt->exam->duration_s;
+        $durationSeconds = $attempt->exam->duration_m ? ($attempt->exam->duration_m * 60) : null;
         $endTime = $durationSeconds ? $startTime->copy()->addSeconds($durationSeconds) : null;
 
         // Check if the current time is past the attempt's end time or past the exam's overall end time

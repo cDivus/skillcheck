@@ -21,7 +21,7 @@
                 @if($exam->timer_type === 'per_question')
                     <p class="text-ink">Per Question Timer</p>
                 @else
-                    <p class="text-ink">Whole Exam ({{ round($exam->duration_s / 60, 2) }} mins)</p>
+                    <p class="text-ink">Whole Exam ({{ $exam->duration_m }} minutes)</p>
                 @endif
             </div>
             <div>

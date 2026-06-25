@@ -40,7 +40,7 @@
                 @if($exam->timer_type === 'per_question')
                     <x-ui.badge color="gray">Per Question</x-ui.badge>
                 @else
-                    <x-ui.badge color="gray">{{ round($exam->duration_s / 60) }} minutes</x-ui.badge>
+                    <x-ui.badge color="gray">{{ $exam->duration_m }} minutes</x-ui.badge>
                 @endif
             </div>
             <div class="flex items-center justify-between border-b border-line py-2">

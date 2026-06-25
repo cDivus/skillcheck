@@ -23,7 +23,7 @@ class Exam extends Model
         'description',
         'start_time',
         'end_time',
-        'duration_s',
+        'duration_m',
         'timer_type',
         'randomize_questions',
         'viewable_responses',

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('Exams', function (Blueprint $table) {
-            $table->boolean('randomize_questions')->default(false)->after('duration_s');
+            $table->boolean('randomize_questions')->default(false)->after('duration_m');
         });
 
         Schema::table('Exam_Attempts', function (Blueprint $table) {
