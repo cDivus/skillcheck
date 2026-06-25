@@ -59,7 +59,7 @@ class ExamController extends Controller
             'viewable_responses' => 'nullable|boolean',
         ]);
 
-        Exam::create([
+        $exam = Exam::create([
             'instructor_id' => Auth::id(),
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
@@ -70,7 +70,7 @@ class ExamController extends Controller
             'viewable_responses' => $request->boolean('viewable_responses'),
         ]);
 
-        return redirect()->route('instructor.exams.index')->with('success', 'Exam created successfully.');
+        return redirect()->route('instructor.exams.show', $exam->exam_id)->with('success', 'Exam created successfully.');
     }
 
     /**
