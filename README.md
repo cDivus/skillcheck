@@ -23,7 +23,7 @@ SkillCheck is a modern, feature-rich online examination and assessment system bu
   - Reorder questions using a drag-and-drop or index reordering interface.
   - Optional image uploads or external image URLs for visual question context.
   - Prevent edits to active exams via lock states.
-- **Import & Export:** Seamlessly export exam questions to standard JSON files or import them to populate new exams.
+
 - **Grading & Evaluation:**
   - Immediate auto-grading of MCQs, True/False, and Short Answer questions.
   - Dedicated interface to review and manually grade student Essay submissions.
@@ -112,7 +112,7 @@ The database seeder generates three default user roles with the password `passwo
 - **`app/Http/Controllers/`**
   - `AuthController.php` — User authentication & profile settings (with profile photo upload).
   - `Admin/` — Admin controls for user suspension and exam moderation.
-  - `Instructor/` — Exam creation, JSON import/export, question reordering, and submission grading.
+  - `Instructor/` — Exam creation, question reordering, and submission grading.
   - `Student/` — Exam list, attempts management, dynamic test-taking views, and submission handling.
 - **`app/Models/`** — Core Eloquent models: `User`, `Exam`, `Question`, `Option`, `ExamAttempt`, `StudentAnswer`.
 - **`database/migrations/`** — Schema definitions supporting question randomization, question-locking states, and suspends.

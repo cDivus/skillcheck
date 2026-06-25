@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 use App\Models\Exam;
 use App\Models\Question;
 use App\Models\Option;
-use App\Services\QuestionImporter;
+
 
 class QuestionController extends Controller
 {
@@ -258,78 +258,7 @@ class QuestionController extends Controller
             ->with('success', 'Question order updated successfully.');
     }
 
-    /**
-     * Import questions from a JSON file.
-     */
-    public function import(Request $request, $examId, QuestionImporter $importer)
-    {
-        $exam = Exam::where('instructor_id', Auth::id())
-            ->findOrFail($examId);
 
-        $request->validate([
-            'json_file' => 'required|file|max:2048', // Validate size, check type manually to support text/json variations
-            'import_mode' => 'required|string|in:append,overwrite',
-        ]);
 
-        $file = $request->file('json_file');
-        $jsonContent = file_get_contents($file->getRealPath());
-        $importMode = $request->input('import_mode');
 
-        try {
-            $count = $importer->import($exam, $jsonContent, $importMode);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Import failed: ' . $e->getMessage());
-        }
-
-        return redirect()->route('instructor.exams.show', $exam->exam_id)
-            ->with('success', "Successfully imported {$count} questions.");
-    }
-
-    /**
-     * Export questions to a JSON file.
-     */
-    public function export($examId)
-    {
-        $exam = Exam::where('instructor_id', Auth::id())
-            ->with(['questions.options'])
-            ->findOrFail($examId);
-
-        $exportData = [];
-
-        foreach ($exam->questions as $question) {
-            $qData = [
-                'question_text' => $question->question_text,
-                'type' => $question->type,
-                'marks' => floatval($question->marks),
-                'time_limit_s' => $question->time_limit_s ? intval($question->time_limit_s) : null,
-                'is_locked' => (bool) $question->is_locked,
-                'image_url' => ($question->image_url && str_starts_with($question->image_url, 'http')) ? $question->image_url : null,
-            ];
-
-            if ($question->type === 'multiple_choice') {
-                $qData['options'] = [];
-                foreach ($question->options as $option) {
-                    $qData['options'][] = [
-                        'option_text' => $option->option_text,
-                        'is_correct' => (bool) $option->is_correct,
-                    ];
-                }
-            } elseif ($question->type === 'true_false') {
-                $trueOption = $question->options->firstWhere('option_text', 'True');
-                $qData['correct_answer'] = $trueOption ? (bool) $trueOption->is_correct : true;
-            } elseif ($question->type === 'question_answer') {
-                $qData['correct_answers'] = $question->options->where('is_correct', true)->pluck('option_text')->toArray();
-            }
-
-            $exportData[] = $qData;
-        }
-
-        $jsonString = json_encode($exportData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $fileName = 'exam_' . Str::slug($exam->title) . '_questions.json';
-
-        return response($jsonString, 200, [
-            'Content-Type' => 'application/json',
-            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
-        ]);
-    }
 }

@@ -45,8 +45,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/exams/{exam}/questions/create', [Instructor\QuestionController::class, 'create'])->name('questions.create');
         Route::post('/exams/{exam}/questions', [Instructor\QuestionController::class, 'store'])->name('questions.store');
-        Route::post('/exams/{exam}/questions/import', [Instructor\QuestionController::class, 'import'])->name('questions.import');
-        Route::get('/exams/{exam}/questions/export', [Instructor\QuestionController::class, 'export'])->name('questions.export');
+
 
         Route::get('/exams/{exam}/questions/reorder', [Instructor\QuestionController::class, 'reorder'])->name('questions.reorder');
         Route::post('/exams/{exam}/questions/reorder', [Instructor\QuestionController::class, 'saveOrder'])->name('questions.save-order');

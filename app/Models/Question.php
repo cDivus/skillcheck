@@ -99,27 +99,11 @@ class Question extends Model
                     $keptOptionIds[] = $newOption->option_id;
                 }
             }
-
-            // Also support JSON import format (correct_answers string/array) for question_answer type
-            if ($this->type === 'question_answer' && empty($submittedOptions) && !empty($data['correct_answers'])) {
-                $answers = (array) $data['correct_answers'];
-                foreach ($answers as $ans) {
-                    if ($ans !== null && trim($ans) !== '') {
-                        $newOption = $this->options()->create([
-                            'order_index' => $optionIndex++,
-                            'option_text' => trim($ans),
-                            'is_correct' => true,
-                        ]);
-                        $keptOptionIds[] = $newOption->option_id;
-                    }
-                }
-            }
-
             // Delete removed options
             $this->options()->whereNotIn('option_id', $keptOptionIds)->delete();
 
         } elseif ($this->type === 'true_false') {
-            $tfCorrect = $data['tf_correct'] ?? $data['correct_answer'] ?? 'True';
+            $tfCorrect = $data['tf_correct'] ?? 'True';
             $correctVal = filter_var($tfCorrect, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
             if ($correctVal === null) {
                 $correctVal = (strtolower(trim($tfCorrect)) === 'true');
