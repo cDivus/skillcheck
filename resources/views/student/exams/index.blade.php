@@ -1,126 +1,113 @@
 @extends('layouts.app')
 
+@section('title', 'My Exams')
+
 @section('content')
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>My Exam Dashboard</h1>
-        <div class="d-flex align-items-center">
-            @if(auth()->user()->profile_picture)
-                <img src="{{ asset('storage/' . auth()->user()->profile_picture) }}" alt="Profile Picture" class="rounded-circle me-2 shadow-sm" style="width: 35px; height: 35px; object-fit: cover; border: 1.5px solid #0d6efd;">
-            @else
-                <span class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center me-2 fw-bold shadow-sm" style="width: 35px; height: 35px; font-size: 0.9rem; border: 1.5px solid #6c757d;">
-                    {{ strtoupper(substr(auth()->user()->username ?? 'G', 0, 1)) }}
-                </span>
-            @endif
-            <span class="me-3 text-muted">Logged in as: <strong>{{ auth()->user()->username }}</strong> (<a href="{{ route('profile.edit') }}" class="text-decoration-none small">Edit Profile</a>)</span>
-            <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                @csrf
-                <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
-            </form>
-        </div>
+<x-ui.page-header
+    title="My Exam Dashboard"
+    subtitle="Access new exams and track your attempts">
+    <x-slot:actions>
+        <x-ui.button variant="secondary" :href="route('profile.edit')">
+            <x-icon name="user-cog" /> Edit Profile
+        </x-ui.button>
+    </x-slot:actions>
+</x-ui.page-header>
+
+{{-- Access a New Exam --}}
+<x-ui.card class="mb-6">
+    <div class="flex items-center gap-2 text-brand-700">
+        <x-icon name="arrow-right" class="h-5 w-5" />
+        <h2 class="text-sm font-semibold text-ink">Access a New Exam</h2>
     </div>
+    <p class="mt-1 text-sm text-muted">Enter the Exam ID (UUID) provided by your instructor to view details and start the exam.</p>
+    <form id="access-exam-form" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+        <div class="flex-1">
+            <x-ui.input id="exam-id-input" placeholder="Enter Exam UUID (e.g. 123e4567-e89b-12d3-a456-426614174000)" required />
+        </div>
+        <x-ui.button type="submit" variant="primary" class="sm:w-auto">Access Exam</x-ui.button>
+    </form>
+</x-ui.card>
 
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger">
-            {{ session('error') }}
-        </div>
-    @endif
-
-    <!-- Start Exam via ID -->
-    <div class="card mb-4 border-primary">
-        <div class="card-body">
-            <h5 class="card-title text-primary">Access a New Exam</h5>
-            <p class="card-text text-muted small">Enter the Exam ID (UUID) provided by your instructor to view details and start the exam.</p>
-            <form id="access-exam-form" class="row g-3 align-items-center">
-                <div class="col-sm-8 col-md-9">
-                    <input type="text" id="exam-id-input" class="form-control" placeholder="Enter Exam UUID (e.g. 123e4567-e89b-12d3-a456-426614174000)" required>
-                </div>
-                <div class="col-sm-4 col-md-3">
-                    <button type="submit" class="btn btn-primary w-100">Access Exam</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Attempted Exams -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 text-secondary">My Exam Attempts</h5>
-        </div>
-        <div class="card-body">
-            @if($attempts->isEmpty())
-                <div class="text-center py-4 text-muted">
-                    <p class="mb-0">You have not attempted any exams yet.</p>
-                    <small>Enter an Exam ID above to get started.</small>
-                </div>
-            @else
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle">
-                        <thead>
-                            <tr>
-                                <th>Exam Title</th>
-                                <th>Started At</th>
-                                <th>Submitted At</th>
-                                <th>Status</th>
-                                <th>Score</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($attempts as $attempt)
-                                <tr>
-                                    <td>
-                                        <strong>{{ $attempt->exam->title ?? 'Unknown Exam' }}</strong>
-                                        @if($attempt->exam && $attempt->exam->description)
-                                            <br><small class="text-muted">{{ Str::limit($attempt->exam->description, 70) }}</small>
-                                        @endif
-                                    </td>
-                                    <td>{{ $attempt->start_time ? $attempt->start_time->format('Y-m-d H:i:s') : 'N/A' }}</td>
-                                    <td>{{ $attempt->end_time ? $attempt->end_time->format('Y-m-d H:i:s') : 'N/A' }}</td>
-                                    <td>
-                                        @if($attempt->status === 'in_progress')
-                                            <span class="badge bg-warning text-dark">In Progress</span>
-                                        @elseif($attempt->status === 'submitted')
-                                            <span class="badge bg-info text-white">Submitted</span>
-                                        @elseif($attempt->status === 'graded')
-                                            <span class="badge bg-success">Graded</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($attempt->status === 'graded')
-                                            <strong>{{ number_format($attempt->total_score, 2) }} / {{ number_format($attempt->max_score, 2) }}</strong>
-                                        @elseif($attempt->status === 'submitted')
-                                            <span class="text-muted small">Pending Grading</span>
-                                        @else
-                                            <span class="text-muted small">—</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($attempt->status === 'in_progress')
-                                            <a href="{{ route('student.exams.attempt.take', ['exam' => $attempt->exam_id, 'attempt' => $attempt->attempt_id]) }}" class="btn btn-primary btn-sm">Resume</a>
-                                        @else
-                                            @if($attempt->exam && $attempt->exam->viewable_responses)
-                                                <a href="{{ route('student.exams.attempt.review', ['exam' => $attempt->exam_id, 'attempt' => $attempt->attempt_id]) }}" class="btn btn-success btn-sm">View Responses</a>
-                                            @else
-                                                <button class="btn btn-secondary btn-sm" disabled title="Responses are locked by the instructor">Completed</button>
-                                            @endif
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
-        </div>
-    </div>
+{{-- My Exam Attempts --}}
+<div class="mb-4 flex items-center gap-2">
+    <x-icon name="list-ordered" class="h-5 w-5 text-brand-700" />
+    <h2 class="text-base font-semibold text-ink">My Exam Attempts</h2>
 </div>
+
+@if($attempts->isEmpty())
+    <x-ui.card padding="p-0" class="overflow-hidden">
+        <x-ui.empty-state
+            icon="clipboard-check"
+            title="You have not attempted any exams yet"
+            message="Enter an Exam ID above to get started." />
+    </x-ui.card>
+@else
+    <x-ui.card padding="p-0" class="overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-line bg-subtle/60 text-left text-xs font-medium uppercase tracking-wide text-faint">
+                        <th class="px-4 py-3 font-medium">Exam Title</th>
+                        <th class="px-4 py-3 font-medium">Started At</th>
+                        <th class="px-4 py-3 font-medium">Submitted At</th>
+                        <th class="px-4 py-3 font-medium">Status</th>
+                        <th class="px-4 py-3 font-medium">Score</th>
+                        <th class="px-4 py-3 font-medium">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-line">
+                    @foreach($attempts as $attempt)
+                        <tr class="hover:bg-subtle/50">
+                            <td class="px-4 py-3">
+                                <div class="font-medium text-ink">{{ $attempt->exam->title ?? 'Unknown Exam' }}</div>
+                                @if($attempt->exam && $attempt->exam->description)
+                                    <div class="mt-0.5 text-xs text-muted">{{ Str::limit($attempt->exam->description, 70) }}</div>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-muted">{{ $attempt->start_time ? $attempt->start_time->format('Y-m-d H:i:s') : 'N/A' }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-muted">{{ $attempt->end_time ? $attempt->end_time->format('Y-m-d H:i:s') : 'N/A' }}</td>
+                            <td class="px-4 py-3">
+                                @if($attempt->status === 'in_progress')
+                                    <x-ui.badge color="amber">In Progress</x-ui.badge>
+                                @elseif($attempt->status === 'submitted')
+                                    <x-ui.badge color="blue">Submitted</x-ui.badge>
+                                @elseif($attempt->status === 'graded')
+                                    <x-ui.badge color="green">Graded</x-ui.badge>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                @if($attempt->status === 'graded')
+                                    <span class="font-medium text-ink">{{ number_format($attempt->total_score, 2) }} / {{ number_format($attempt->max_score, 2) }}</span>
+                                @elseif($attempt->status === 'submitted')
+                                    <span class="text-xs text-muted">Pending Grading</span>
+                                @else
+                                    <span class="text-xs text-faint">&mdash;</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3">
+                                @if($attempt->status === 'in_progress')
+                                    <x-ui.button size="sm" variant="primary" :href="route('student.exams.attempt.take', ['exam' => $attempt->exam_id, 'attempt' => $attempt->attempt_id])">
+                                        <x-icon name="arrow-right" /> Resume
+                                    </x-ui.button>
+                                @else
+                                    @if($attempt->exam && $attempt->exam->viewable_responses)
+                                        <x-ui.button size="sm" variant="secondary" :href="route('student.exams.attempt.review', ['exam' => $attempt->exam_id, 'attempt' => $attempt->attempt_id])">
+                                            <x-icon name="eye" /> View Responses
+                                        </x-ui.button>
+                                    @else
+                                        <x-ui.button size="sm" variant="subtle" disabled title="Responses are locked by the instructor">
+                                            <x-icon name="lock" /> Completed
+                                        </x-ui.button>
+                                    @endif
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </x-ui.card>
+@endif
 
 <script>
     document.getElementById('access-exam-form').addEventListener('submit', function(e) {

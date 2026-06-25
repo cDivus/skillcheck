@@ -1,125 +1,75 @@
 @extends('layouts.app')
 
+@section('title', 'My Profile')
+
 @section('content')
-<div class="container py-4">
-    <div class="mb-4">
-        @if(auth()->user()->role === 'instructor')
-            <a href="{{ route('instructor.exams.index') }}" class="btn btn-outline-secondary btn-sm">&larr; Back to Dashboard</a>
-        @elseif(auth()->user()->role === 'student')
-            <a href="{{ route('student.exams.index') }}" class="btn btn-outline-secondary btn-sm">&larr; Back to Dashboard</a>
-        @elseif(auth()->user()->role === 'admin')
-            <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-sm">&larr; Back to Dashboard</a>
-        @else
-            <a href="/" class="btn btn-outline-secondary btn-sm">&larr; Back Home</a>
-        @endif
-    </div>
+    <x-ui.page-header title="My Profile" subtitle="Manage your account details and security." />
 
-    <div class="row">
-        <!-- Profile Sidebar Card -->
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-0 text-center p-4">
-                <div class="card-body">
-                    <div class="mb-3">
-                        @if($user->profile_picture)
-                            <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="Profile Picture" class="rounded-circle img-thumbnail shadow-sm" style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #0d6efd;">
-                        @else
-                            <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 150px; height: 150px; font-size: 4rem; border: 3px solid #6c757d;">
-                                {{ strtoupper(substr($user->username, 0, 1)) }}
-                            </div>
-                        @endif
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {{-- Identity card --}}
+        <div class="lg:col-span-1">
+            <x-ui.card class="text-center">
+                <div class="flex flex-col items-center">
+                    <x-ui.avatar :user="$user" size="xl" />
+                    <h2 class="mt-4 text-lg font-semibold text-ink">{{ $user->username }}</h2>
+                    <p class="mt-0.5 text-sm text-muted">{{ $user->email }}</p>
+                    <div class="mt-3">
+                        @php $roleColor = ['admin' => 'red', 'instructor' => 'brand', 'student' => 'blue'][$user->role] ?? 'gray'; @endphp
+                        <x-ui.badge :color="$roleColor" class="uppercase tracking-wide">{{ $user->role }}</x-ui.badge>
                     </div>
-                    <h3 class="fw-bold text-dark mb-1">{{ $user->username }}</h3>
-                    <p class="text-muted small mb-3">{{ $user->email }}</p>
-                    <span class="badge bg-primary text-uppercase px-3 py-2" style="font-size: 0.8rem;">
-                        {{ $user->role }}
-                    </span>
                 </div>
-            </div>
+            </x-ui.card>
         </div>
 
-        <!-- Edit Profile Form -->
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3">
-                    <h4 class="card-title fw-bold mb-0 text-primary">Edit Profile Details</h4>
+        {{-- Edit form --}}
+        <div class="lg:col-span-2">
+            <x-ui.card padding="p-0" class="overflow-hidden">
+                <div class="border-b border-line px-5 py-4 sm:px-6">
+                    <h2 class="flex items-center gap-2 text-base font-semibold text-ink">
+                        <x-icon name="settings" class="w-4 h-4 text-muted" /> Edit Profile Details
+                    </h2>
                 </div>
-                <div class="card-body p-4">
-                    @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
 
-                    @if($errors->any())
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <ul class="mb-0 small">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
+                <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="px-5 py-5 sm:px-6 sm:py-6">
+                    @csrf
+                    @method('PUT')
 
-                    <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
+                    <div class="space-y-5">
+                        <x-ui.input label="Username" name="username" value="{{ old('username', $user->username) }}" required />
 
-                        <!-- Username Field -->
-                        <div class="mb-3">
-                            <label for="username" class="form-label fw-bold text-secondary small">Username</label>
-                            <input type="text" name="username" id="username" class="form-control @error('username') is-invalid @enderror" value="{{ old('username', $user->username) }}" required>
-                            @error('username')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div>
+                            <label class="block text-sm font-medium text-ink mb-1.5">Email Address</label>
+                            <input type="text" value="{{ $user->email }}" readonly disabled
+                                class="w-full cursor-not-allowed rounded-lg border border-line bg-subtle px-3 py-2 text-sm text-muted">
+                            <p class="mt-1.5 text-xs text-muted">Email address cannot be changed.</p>
                         </div>
 
-                        <!-- Email Field (Readonly) -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-secondary small">Email Address</label>
-                            <input type="text" class="form-control bg-light" value="{{ $user->email }}" readonly disabled>
-                            <div class="form-text text-muted">Email address cannot be changed.</div>
+                        <div>
+                            <label for="profile_picture" class="block text-sm font-medium text-ink mb-1.5">Profile Picture</label>
+                            <input type="file" name="profile_picture" id="profile_picture" accept="image/*"
+                                class="block w-full text-sm text-muted file:mr-4 file:rounded-lg file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100 @error('profile_picture') text-red-600 @enderror">
+                            <p class="mt-1.5 text-xs text-muted">Recommended: JPEG/PNG/WebP, max 2MB.</p>
+                            @error('profile_picture')<p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>@enderror
                         </div>
+                    </div>
 
-                        <!-- Profile Picture Field -->
-                        <div class="mb-3">
-                            <label for="profile_picture" class="form-label fw-bold text-secondary small">Profile Picture</label>
-                            <input type="file" name="profile_picture" id="profile_picture" class="form-control @error('profile_picture') is-invalid @enderror" accept="image/*">
-                            <div class="form-text text-muted">Upload a new profile picture. Recommended: JPEG/PNG/WebP, max 2MB.</div>
-                            @error('profile_picture')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                    <div class="my-6 border-t border-line"></div>
 
-                        <hr class="my-4">
-                        <h5 class="text-secondary fw-bold mb-3">Change Password</h5>
-                        <p class="text-muted small mb-3">Leave blank if you do not want to change your password.</p>
+                    <h3 class="flex items-center gap-2 text-sm font-semibold text-ink">
+                        <x-icon name="lock" class="w-4 h-4 text-muted" /> Change Password
+                    </h3>
+                    <p class="mt-1 text-xs text-muted">Leave blank if you do not want to change your password.</p>
 
-                        <div class="row">
-                            <!-- Password Field -->
-                            <div class="col-md-6 mb-3">
-                                <label for="password" class="form-label fw-bold text-secondary small">New Password</label>
-                                <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror">
-                                @error('password')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                    <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2">
+                        <x-ui.input label="New Password" name="password" type="password" autocomplete="new-password" />
+                        <x-ui.input label="Confirm New Password" name="password_confirmation" type="password" autocomplete="new-password" />
+                    </div>
 
-                            <!-- Confirm Password Field -->
-                            <div class="col-md-6 mb-3">
-                                <label for="password_confirmation" class="form-label fw-bold text-secondary small">Confirm New Password</label>
-                                <input type="password" name="password_confirmation" id="password_confirmation" class="form-control">
-                            </div>
-                        </div>
-
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <button type="submit" class="btn btn-primary px-4 py-2 shadow-sm">Save Changes</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                    <div class="mt-6 flex justify-end">
+                        <x-ui.button type="submit" variant="primary"><x-icon name="check" /> Save Changes</x-ui.button>
+                    </div>
+                </form>
+            </x-ui.card>
         </div>
     </div>
-</div>
 @endsection

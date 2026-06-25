@@ -1,86 +1,72 @@
 @extends('layouts.app')
 
+@section('title', 'Submissions')
+
 @section('content')
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="h3 mb-1">Submissions</h1>
-                <p class="text-muted mb-0">Exam: <strong>{{ $exam->title }}</strong></p>
-            </div>
-            <a href="{{ route('instructor.exams.index') }}" class="btn btn-outline-secondary">&larr; Back to Exams Dashboard</a>
-        </div>
+    <x-ui.page-header title="Submissions" subtitle="Exam: {{ $exam->title }}">
+        <x-slot:actions>
+            <x-ui.button href="{{ route('instructor.exams.index') }}" variant="secondary">
+                <x-icon name="arrow-left" /> Back to Exams Dashboard
+            </x-ui.button>
+        </x-slot:actions>
+    </x-ui.page-header>
 
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ session('error') }}
-            </div>
-        @endif
-
-        <div class="card shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0 text-secondary">Student Attempts</h5>
-            </div>
-            <div class="card-body p-0">
-                @if ($attempts->isEmpty())
-                    <div class="text-center py-5 text-muted">
-                        No submissions recorded for this exam yet.
-                    </div>
-                @else
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-4">Student</th>
-                                    <th>Started At</th>
-                                    <th>Submitted At</th>
-                                    <th>Status</th>
-                                    <th>Score</th>
-                                    <th class="text-end pe-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($attempts as $attempt)
-                                    <tr>
-                                        <td class="ps-4">
-                                            <div class="fw-bold">{{ $attempt->student->username }}</div>
-                                            <small class="text-muted">{{ $attempt->student->email }}</small>
-                                        </td>
-                                        <td>{{ $attempt->started_at ? $attempt->started_at->format('Y-m-d H:i:s') : 'N/A' }}</td>
-                                        <td>{{ $attempt->submitted_at ? $attempt->submitted_at->format('Y-m-d H:i:s') : 'N/A' }}</td>
-                                        <td>
-                                            @if ($attempt->status === 'graded')
-                                                <span class="badge bg-success">Graded</span>
-                                            @else
-                                                <span class="badge bg-warning text-dark">Pending Grading</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if ($attempt->status === 'graded')
-                                                <strong>{{ number_format($attempt->total_score, 1) }}</strong> <span class="text-muted">/ {{ number_format($attempt->max_score, 1) }}</span>
-                                            @else
-                                                <span class="text-muted">Partially graded</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-end pe-4">
-                                            <a href="{{ route('instructor.submissions.grade', $attempt->attempt_id) }}" class="btn btn-primary btn-sm">
-                                                {{ $attempt->status === 'graded' ? 'View Details' : 'Grade Submission' }}
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
-            </div>
-        </div>
+    <div class="mb-3 flex items-center gap-2">
+        <x-icon name="clipboard-check" class="w-5 h-5 text-faint" />
+        <h2 class="text-lg font-semibold text-ink">Student Attempts</h2>
     </div>
-</div>
+
+    @if ($attempts->isEmpty())
+        <x-ui.card padding="p-0" class="overflow-hidden">
+            <x-ui.empty-state icon="clipboard-check" title="No submissions yet" message="No submissions recorded for this exam yet." />
+        </x-ui.card>
+    @else
+        <x-ui.card padding="p-0" class="overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-line bg-subtle/60 text-left text-xs font-medium uppercase tracking-wide text-faint">
+                            <th class="px-4 py-3 font-medium">Student</th>
+                            <th class="px-4 py-3 font-medium">Started At</th>
+                            <th class="px-4 py-3 font-medium">Submitted At</th>
+                            <th class="px-4 py-3 font-medium">Status</th>
+                            <th class="px-4 py-3 font-medium">Score</th>
+                            <th class="px-4 py-3 text-right font-medium">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-line">
+                        @foreach ($attempts as $attempt)
+                            <tr class="hover:bg-subtle/50">
+                                <td class="px-4 py-3">
+                                    <div class="font-medium text-ink">{{ $attempt->student->username }}</div>
+                                    <div class="text-xs text-muted">{{ $attempt->student->email }}</div>
+                                </td>
+                                <td class="px-4 py-3 text-muted">{{ $attempt->started_at ? $attempt->started_at->format('Y-m-d H:i:s') : 'N/A' }}</td>
+                                <td class="px-4 py-3 text-muted">{{ $attempt->submitted_at ? $attempt->submitted_at->format('Y-m-d H:i:s') : 'N/A' }}</td>
+                                <td class="px-4 py-3">
+                                    @if ($attempt->status === 'graded')
+                                        <x-ui.badge color="green">Graded</x-ui.badge>
+                                    @else
+                                        <x-ui.badge color="amber">Pending Grading</x-ui.badge>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3">
+                                    @if ($attempt->status === 'graded')
+                                        <strong class="text-ink">{{ number_format($attempt->total_score, 1) }}</strong> <span class="text-muted">/ {{ number_format($attempt->max_score, 1) }}</span>
+                                    @else
+                                        <span class="text-muted">Partially graded</span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3 text-right">
+                                    <x-ui.button href="{{ route('instructor.submissions.grade', $attempt->attempt_id) }}" variant="primary" size="sm">
+                                        {{ $attempt->status === 'graded' ? 'View Details' : 'Grade Submission' }}
+                                    </x-ui.button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </x-ui.card>
+    @endif
 @endsection

@@ -1,23 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Online Exam Platform</title>
-    <script>
-        if (localStorage.getItem('theme') === 'light') {
-            document.documentElement.classList.add('light');
-            document.documentElement.classList.remove('dark');
-        } else {
-            document.documentElement.classList.add('dark');
-            document.documentElement.classList.remove('light');
-        }
-    </script>
+    <meta name="theme-color" content="#0f766e">
+    <title>@yield('title', 'SkillCheck') · SkillCheck</title>
+
+    <link rel="icon" type="image/png" href="{{ asset('images/logo_skillcheck_square.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo_skillcheck_square.png') }}">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-brand-light dark:bg-brand-dark text-brand-dark dark:text-brand-light antialiased">
-    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+<body class="min-h-screen bg-canvas text-ink antialiased">
+    <x-app.shell :title="trim($__env->yieldContent('title', 'SkillCheck'))">
         @yield('content')
-    </div>
+    </x-app.shell>
 </body>
 </html>

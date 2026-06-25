@@ -26,9 +26,11 @@ return new class extends Migration
             $table->unique(['exam_id', 'order_index']);
         });
 
-        // Add check constraints
-        DB::statement('ALTER TABLE Questions ADD CONSTRAINT chk_time_limit CHECK (time_limit_s > 0)');
-        DB::statement('ALTER TABLE Questions ADD CONSTRAINT chk_marks CHECK (marks >= 0)');
+        // Add check constraints (SQLite cannot ALTER TABLE ADD CONSTRAINT; skip there)
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE Questions ADD CONSTRAINT chk_time_limit CHECK (time_limit_s > 0)');
+            DB::statement('ALTER TABLE Questions ADD CONSTRAINT chk_marks CHECK (marks >= 0)');
+        }
     }
 
     /**

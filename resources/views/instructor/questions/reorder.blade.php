@@ -1,68 +1,58 @@
 @extends('layouts.app')
 
-@section('content')
-<div class="container py-4">
-    <div class="mb-4 d-flex justify-content-between align-items-center">
-        <div>
-            <a href="{{ route('instructor.exams.show', $exam->exam_id) }}" class="btn btn-outline-secondary btn-sm mb-2">&larr; Back to Exam</a>
-            <h1 class="h2 text-dark font-weight-bold">Reorder Questions</h1>
-            <p class="text-muted mb-0">Drag and drop the questions below to rearrange their order in the exam <strong>"{{ $exam->title }}"</strong>.</p>
-        </div>
-    </div>
+@section('title', 'Reorder Questions')
 
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
+@section('content')
+    <x-ui.page-header title="Reorder Questions" subtitle="Drag and drop to rearrange questions in &quot;{{ $exam->title }}&quot;">
+        <x-slot:actions>
+            <x-ui.button href="{{ route('instructor.exams.show', $exam->exam_id) }}" variant="secondary">
+                <x-icon name="arrow-left" /> Back to Exam
+            </x-ui.button>
+        </x-slot:actions>
+    </x-ui.page-header>
 
     @if($exam->questions->isEmpty())
-        <div class="alert alert-info">
-            This exam has no questions to reorder.
-        </div>
+        <x-ui.card padding="p-0" class="overflow-hidden">
+            <x-ui.empty-state icon="list-ordered" title="Nothing to reorder" message="This exam has no questions to reorder." />
+        </x-ui.card>
     @else
-        <div class="row">
-            <div class="col-lg-8">
+        <div class="grid gap-6 lg:grid-cols-3">
+            <div class="lg:col-span-2">
                 <form action="{{ route('instructor.questions.save-order', $exam->exam_id) }}" method="POST">
                     @csrf
-                    
-                    <div id="sortable-list" class="list-group mb-4">
+
+                    <div id="sortable-list" class="mb-6 space-y-2">
                         @foreach($exam->questions as $index => $question)
-                            <div class="sortable-item list-group-item list-group-item-action border rounded mb-2 p-3 shadow-sm d-flex align-items-center bg-white" 
-                                 draggable="true" 
+                            <div class="sortable-item flex items-center rounded-xl border border-line bg-white p-3 shadow-xs"
+                                 draggable="true"
                                  data-id="{{ $question->question_id }}">
-                                
+
                                 <input type="hidden" name="question_ids[]" value="{{ $question->question_id }}">
-                                
+
                                 <!-- Drag Handle -->
-                                <div class="drag-handle text-muted me-3" style="cursor: grab;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-grip-vertical" viewBox="0 0 16 16">
+                                <div class="drag-handle mr-3 text-faint" style="cursor: grab;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                                         <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
                                     </svg>
                                 </div>
 
                                 <!-- Visual Index Badge -->
-                                <div class="me-3">
-                                    <span class="badge bg-primary rounded-circle visual-index d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.95rem;">
+                                <div class="mr-3">
+                                    <span class="visual-index inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-700 text-sm font-medium text-white">
                                         {{ $index + 1 }}
                                     </span>
                                 </div>
 
                                 <!-- Question Summary -->
-                                <div class="flex-grow-1 min-width-0">
-                                    <div class="d-flex align-items-center mb-1">
-                                        <span class="badge bg-secondary text-white me-2" style="font-size: 0.75rem;">
-                                            {{ str_replace('_', ' ', strtoupper($question->type)) }}
-                                        </span>
-                                        <span class="badge bg-info text-dark" style="font-size: 0.75rem;">
-                                            Marks: {{ $question->marks }}
-                                        </span>
+                                <div class="min-w-0 flex-1">
+                                    <div class="mb-1 flex flex-wrap items-center gap-2">
+                                        <x-ui.badge color="gray">{{ str_replace('_', ' ', strtoupper($question->type)) }}</x-ui.badge>
+                                        <x-ui.badge color="blue">Marks: {{ $question->marks }}</x-ui.badge>
                                         @if($question->is_locked)
-                                            <span class="badge bg-dark text-white ms-2" style="font-size: 0.75rem;">🔒 Locked Position</span>
+                                            <x-ui.badge color="gray"><x-icon name="lock" /> Locked Position</x-ui.badge>
                                         @endif
                                     </div>
-                                    <div class="text-truncate fw-semibold text-dark" style="max-width: 90%;">
+                                    <div class="truncate text-sm font-semibold text-ink">
                                         {{ Str::limit($question->question_text, 120) }}
                                     </div>
                                 </div>
@@ -70,47 +60,44 @@
                         @endforeach
                     </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary shadow-sm px-4">Save New Order</button>
-                        <a href="{{ route('instructor.exams.show', $exam->exam_id) }}" class="btn btn-outline-secondary px-4">Cancel</a>
+                    <div class="flex gap-2">
+                        <x-ui.button type="submit" variant="primary"><x-icon name="check" /> Save New Order</x-ui.button>
+                        <x-ui.button href="{{ route('instructor.exams.show', $exam->exam_id) }}" variant="secondary">Cancel</x-ui.button>
                     </div>
                 </form>
             </div>
-            
-            <div class="col-lg-4 mt-4 mt-lg-0">
-                <div class="card bg-light border-0 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="fw-bold text-dark mb-3">Tips & Guidelines</h5>
-                        <ul class="text-muted mb-0 ps-3">
-                            <li class="mb-2">Click and drag from the handle <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-grip-vertical d-inline-block align-middle" viewBox="0 0 16 16"><path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg> or anywhere on the question card to move it up or down.</li>
-                            <li class="mb-2">The numbers on the left will automatically update to preview the new sequence.</li>
-                            <li class="mb-2">Make sure to click <strong>"Save New Order"</strong> to apply the changes.</li>
-                            <li>Questions marked with 🔒 Locked Position are pinned during exam-taking when randomization is enabled, but can still be reordered here.</li>
-                        </ul>
-                    </div>
-                </div>
+
+            <div>
+                <x-ui.card>
+                    <h5 class="mb-3 flex items-center gap-2 text-sm font-semibold text-ink"><x-icon name="info" class="w-4 h-4" /> Tips &amp; Guidelines</h5>
+                    <ul class="list-disc space-y-2 pl-5 text-sm text-muted">
+                        <li>Click and drag from the handle <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="inline-block align-middle" viewBox="0 0 16 16"><path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg> or anywhere on the question card to move it up or down.</li>
+                        <li>The numbers on the left will automatically update to preview the new sequence.</li>
+                        <li>Make sure to click <strong>"Save New Order"</strong> to apply the changes.</li>
+                        <li>Questions marked with 🔒 Locked Position are pinned during exam-taking when randomization is enabled, but can still be reordered here.</li>
+                    </ul>
+                </x-ui.card>
             </div>
         </div>
     @endif
-</div>
 
 <style>
     .sortable-item {
         transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
         user-select: none;
     }
-    
+
     .sortable-item:hover {
         background-color: #f8f9fa !important;
         transform: translateY(-1px);
         box-shadow: 0 .25rem .5rem rgba(0,0,0,.08)!important;
     }
-    
+
     .sortable-item.dragging {
         opacity: 0.5;
         background-color: #e9ecef !important;
         border-style: dashed !important;
-        border-color: #0d6efd !important;
+        border-color: #0f766e !important;
         transform: scale(0.98);
         box-shadow: none !important;
     }
@@ -159,7 +146,7 @@
 
         function getDragAfterElement(container, y) {
             const draggableElements = [...container.querySelectorAll('.sortable-item:not(.dragging)')];
-            
+
             return draggableElements.reduce((closest, child) => {
                 const box = child.getBoundingClientRect();
                 const offset = y - box.top - box.height / 2;

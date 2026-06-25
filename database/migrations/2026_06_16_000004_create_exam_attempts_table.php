@@ -24,8 +24,10 @@ return new class extends Migration
             $table->foreign('student_id')->references('user_id')->on('Users')->onDelete('cascade');
         });
 
-        // Add check constraints
-        DB::statement('ALTER TABLE Exam_Attempts ADD CONSTRAINT chk_attempt_times CHECK (end_time >= start_time)');
+        // Add check constraints (SQLite cannot ALTER TABLE ADD CONSTRAINT; skip there)
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE Exam_Attempts ADD CONSTRAINT chk_attempt_times CHECK (end_time >= start_time)');
+        }
     }
 
     /**
