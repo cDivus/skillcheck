@@ -16,13 +16,13 @@
 
   <div class="sc-card glass-panel p-8 shadow-2xl">
     @if (session('status'))
-        <div class="mb-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-4 text-sm text-emerald-300" role="alert">
+        <div class="mb-6 rounded-lg bg-emerald-50 border border-emerald-200 p-4 text-sm text-emerald-700" role="alert">
             {{ session('status') }}
         </div>
     @endif
 
     @if ($errors->any())
-        <div class="mb-6 rounded-lg bg-red-500/10 border border-red-500/20 p-4 text-sm text-red-300">
+        <div class="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600">
             <ul class="mb-0 list-disc list-inside">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -35,13 +35,13 @@
       @csrf
 
       <div>
-        <label for="login" class="block text-sm font-medium text-white/90 mb-1.5">Email or Username</label>
+        <label for="login" class="block text-sm font-medium text-black mb-1.5">Email or Username</label>
         <div class="relative">
           <input
             type="text"
             name="login"
             id="login"
-            class="w-full rounded-xl border border-white/10 bg-white/5 p-3.5 text-sm text-white shadow-inner placeholder-white/30 focus:border-brand-400 focus:bg-white/10 focus:ring-1 focus:ring-brand-400 transition-all duration-200"
+            class="w-full rounded-xl border border-black/10 bg-transparent p-3.5 text-sm text-black shadow-inner placeholder-black/50 focus:border-brand-500 focus:bg-black/5 focus:ring-1 focus:ring-brand-500 transition-all duration-200"
             placeholder="Enter your email or username"
             value="{{ old('login') }}"
             required
@@ -52,8 +52,8 @@
 
       <div>
         <div class="flex justify-between items-center mb-1.5">
-          <label for="password" class="block text-sm font-medium text-white/90">Password</label>
-          <a href="{{ route('password.request') }}" class="text-xs font-medium text-brand-300 hover:text-white transition-colors">
+          <label for="password" class="block text-sm font-medium text-black">Password</label>
+          <a href="{{ route('password.request') }}" class="text-xs font-medium text-brand-600 hover:text-brand-900 transition-colors">
             Forgot Password?
           </a>
         </div>
@@ -62,7 +62,7 @@
             type="password"
             name="password"
             id="password"
-            class="w-full rounded-xl border border-white/10 bg-white/5 p-3.5 text-sm text-white shadow-inner placeholder-white/30 focus:border-brand-400 focus:bg-white/10 focus:ring-1 focus:ring-brand-400 transition-all duration-200"
+            class="w-full rounded-xl border border-black/10 bg-transparent p-3.5 text-sm text-black shadow-inner placeholder-black/50 focus:border-brand-500 focus:bg-black/5 focus:ring-1 focus:ring-brand-500 transition-all duration-200"
             placeholder="••••••••"
             required
           />
@@ -75,9 +75,9 @@
         </x-ui.button>
       </div>
 
-      <p class="text-center text-sm text-brand-100/60 mt-8">
+      <p class="text-center text-sm text-black/70 mt-8">
         Don't have an account?
-        <a class="font-medium text-brand-300 hover:text-white transition-colors" href="{{ route('register') }}">
+        <a class="font-medium text-brand-600 hover:text-brand-900 transition-colors" href="{{ route('register') }}">
           Create one now
         </a>
       </p>

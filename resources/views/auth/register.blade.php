@@ -16,7 +16,7 @@
 
   <div class="sc-card glass-panel p-8 shadow-2xl">
     @if ($errors->any())
-        <div class="mb-6 rounded-lg bg-red-500/10 border border-red-500/20 p-4 text-sm text-red-300">
+        <div class="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600">
             <ul class="mb-0 list-disc list-inside">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -30,12 +30,12 @@
 
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
-          <label for="username" class="block text-sm font-medium text-white/90 mb-1.5">Username</label>
+          <label for="username" class="block text-sm font-medium text-black mb-1.5">Username</label>
           <input
             type="text"
             name="username"
             id="username"
-            class="w-full rounded-xl border border-white/10 bg-white/5 p-3.5 text-sm text-white shadow-inner placeholder-white/30 focus:border-brand-400 focus:bg-white/10 focus:ring-1 focus:ring-brand-400 transition-all duration-200"
+            class="w-full rounded-xl border border-black/10 bg-transparent p-3.5 text-sm text-black shadow-inner placeholder-black/50 focus:border-brand-500 focus:bg-black/5 focus:ring-1 focus:ring-brand-500 transition-all duration-200"
             placeholder="Choose a username"
             value="{{ old('username') }}"
             required
@@ -43,12 +43,12 @@
         </div>
 
         <div>
-          <label for="email" class="block text-sm font-medium text-white/90 mb-1.5">Email Address</label>
+          <label for="email" class="block text-sm font-medium text-black mb-1.5">Email Address</label>
           <input
             type="email"
             name="email"
             id="email"
-            class="w-full rounded-xl border border-white/10 bg-white/5 p-3.5 text-sm text-white shadow-inner placeholder-white/30 focus:border-brand-400 focus:bg-white/10 focus:ring-1 focus:ring-brand-400 transition-all duration-200"
+            class="w-full rounded-xl border border-black/10 bg-transparent p-3.5 text-sm text-black shadow-inner placeholder-black/50 focus:border-brand-500 focus:bg-black/5 focus:ring-1 focus:ring-brand-500 transition-all duration-200"
             placeholder="you@example.com"
             value="{{ old('email') }}"
             required
@@ -58,24 +58,24 @@
 
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
-          <label for="password" class="block text-sm font-medium text-white/90 mb-1.5">Password</label>
+          <label for="password" class="block text-sm font-medium text-black mb-1.5">Password</label>
           <input
             type="password"
             name="password"
             id="password"
-            class="w-full rounded-xl border border-white/10 bg-white/5 p-3.5 text-sm text-white shadow-inner placeholder-white/30 focus:border-brand-400 focus:bg-white/10 focus:ring-1 focus:ring-brand-400 transition-all duration-200"
+            class="w-full rounded-xl border border-black/10 bg-transparent p-3.5 text-sm text-black shadow-inner placeholder-black/50 focus:border-brand-500 focus:bg-black/5 focus:ring-1 focus:ring-brand-500 transition-all duration-200"
             placeholder="Create a password"
             required
           />
         </div>
 
         <div>
-          <label for="password_confirmation" class="block text-sm font-medium text-white/90 mb-1.5">Confirm Password</label>
+          <label for="password_confirmation" class="block text-sm font-medium text-black mb-1.5">Confirm Password</label>
           <input
             type="password"
             name="password_confirmation"
             id="password_confirmation"
-            class="w-full rounded-xl border border-white/10 bg-white/5 p-3.5 text-sm text-white shadow-inner placeholder-white/30 focus:border-brand-400 focus:bg-white/10 focus:ring-1 focus:ring-brand-400 transition-all duration-200"
+            class="w-full rounded-xl border border-black/10 bg-transparent p-3.5 text-sm text-black shadow-inner placeholder-black/50 focus:border-brand-500 focus:bg-black/5 focus:ring-1 focus:ring-brand-500 transition-all duration-200"
             placeholder="Re-enter password"
             required
           />
@@ -83,11 +83,11 @@
       </div>
 
       <div>
-        <label for="role" class="block text-sm font-medium text-white/90 mb-1.5">Account Role</label>
+        <label for="role" class="block text-sm font-medium text-black mb-1.5">Account Role</label>
         <select
           name="role"
           id="role"
-          class="w-full rounded-xl border border-white/10 bg-white/5 p-3.5 text-sm text-white shadow-inner focus:border-brand-400 focus:bg-white/10 focus:ring-1 focus:ring-brand-400 transition-all duration-200 [&>option]:text-ink"
+          class="w-full rounded-xl border border-black/10 bg-transparent p-3.5 text-sm text-black shadow-inner focus:border-brand-500 focus:bg-black/5 focus:ring-1 focus:ring-brand-500 transition-all duration-200 [&>option]:text-ink"
           required
         >
           <option value="student" {{ old('role') === 'student' ? 'selected' : '' }}>Student (Take Exams)</option>
@@ -96,17 +96,17 @@
       </div>
 
       <div>
-        <label for="profile_picture" class="block text-sm font-medium text-white/90 mb-1.5">Profile Picture</label>
-        <div class="relative w-full rounded-xl border border-white/10 bg-white/5 p-2 shadow-inner focus-within:border-brand-400 focus-within:ring-1 focus-within:ring-brand-400 transition-all duration-200">
+        <label for="profile_picture" class="block text-sm font-medium text-black mb-1.5">Profile Picture</label>
+        <div class="relative w-full rounded-xl border border-black/10 bg-transparent p-2 shadow-inner focus-within:border-brand-500 focus-within:ring-1 focus-within:ring-brand-500 transition-all duration-200">
           <input
             type="file"
             name="profile_picture"
             id="profile_picture"
-            class="w-full text-sm text-white/70 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-500 file:text-white hover:file:bg-brand-400 file:transition-colors file:cursor-pointer cursor-pointer"
+            class="w-full text-sm text-black/70 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-500 file:text-white hover:file:bg-brand-400 file:transition-colors file:cursor-pointer cursor-pointer"
             accept="image/*"
           />
         </div>
-        <p class="text-xs text-brand-100/50 mt-2">Optional. Recommended format: JPEG/PNG/WebP, max 2MB.</p>
+        <p class="text-xs text-black/60 mt-2">Optional. Recommended format: JPEG/PNG/WebP, max 2MB.</p>
       </div>
 
       <div class="pt-2">
@@ -115,9 +115,9 @@
         </x-ui.button>
       </div>
 
-      <p class="text-center text-sm text-brand-100/60 mt-8">
+      <p class="text-center text-sm text-black/70 mt-8">
         Already have an account?
-        <a class="font-medium text-brand-300 hover:text-white transition-colors" href="{{ route('login') }}">
+        <a class="font-medium text-brand-600 hover:text-brand-900 transition-colors" href="{{ route('login') }}">
           Login here
         </a>
       </p>
