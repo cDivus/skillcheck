@@ -1,0 +1,9 @@
+{
+    "$schema": "https://railpack.com/schema.json",
+    "providers": [
+        "php"
+    ],
+    "packages": {
+        "php": "8.4"
+    }
+}
