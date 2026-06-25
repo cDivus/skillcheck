@@ -115,6 +115,10 @@ app/
 
 The system uses **6 core tables** with well-defined relationships:
 
+<p align="center">
+  <img src="ERD.drawio.png" alt="Entity Relationship Diagram" width="700">
+</p>
+
 | Table | Purpose |
 |:---|:---|
 | `users` | Admin, instructor, and student accounts with role enum |
